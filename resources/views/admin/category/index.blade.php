@@ -1,51 +1,67 @@
 @extends('layout.admin')
+
 @section('content')
-    <div class="container">
-        <h1 class="text-center fw-bold text-dark mb-5">Danh sách các dang mục</h1>
-        <div>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>id</th>
-                        <th>name</th>
-                        <th>description</th>
-                        <th>image</th>
-                        <th>parent_id</th>
-                        <th>is_active</th>
-                        <th>is_deleted</th>
-                        <th>action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($categories as $category)
-                        <tr>
-                            <td>{{ $category['id'] }}</td>
-                            <td>{{ $category['name'] }}</td>
-                            <td>{{ $category['description'] }}</td>
-                            <td>{{ $category['image'] }}</td>
-                            <td>{{ $category['parent_id'] }}</td>
-                            <td>{{ $category['is_active'] }}</td>
-                            <td>{{ $category['is_deleted'] }}</td>
-                            <td>
-                                <!-- <a href="{{ route('categories.show', $category->id) }}" class="btn btn-sm btn-primary">Detail</a> -->
-
-                                <a href="{{ route('categories.edit', $category->id) }}" class="btn btn-sm btn-info">Edit</a>
-
-                                <form action="{{ route('categories.destroy', $category->id) }}" method="POST" style="display:inline-block;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" >Delete</button>
-                                </form>
-                            </td>
-
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="fw-bold text-dark">Quản lý danh mục</h1>
+            <a href="{{ route('categories.create') }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Thêm danh mục mới
+            </a>
         </div>
-        <div>
+
+        <div class="card shadow border-0">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>Tên danh mục</th>
+                            <th>Mô tả</th>
+                            <th>Danh mục cha</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($categories as $category)
+                            <tr>
+                                <td class="ps-4">{{ $category->id }}</td>
+                                <td><strong>{{ $category->name }}</strong></td>
+                                <td class="text-muted">{{ Str::limit($category->description, 50) }}</td>
+                                <td>
+                                    {{ $category->parent ? $category->parent->name : 'Gốc' }}
+                                </td>
+                                <td>
+                                    @if($category->is_active)
+                                        <span class="badge bg-success-subtle text-success border border-success">Đang hiện</span>
+                                    @else
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary">Đang ẩn</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <a href="{{ route('categories.edit', $category->id) }}" class="btn btn-sm btn-outline-info" title="Sửa">
+                                            Sửa
+                                        </a>
+
+                                        <form action="{{ route('categories.destroy', $category->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa danh mục này vào thùng rác?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger ms-1" title="Xóa">
+                                                Xóa
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-center">
             {{ $categories->links() }}
         </div>
     </div>
-
 @endsection

@@ -21,6 +21,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone_number',      // Khớp với migration của Duy
+        'phone_verified_at',
+        'otp_code',          // Mã OTP xác thực
+        'otp_expires_at',    // Thời gian hết hạn OTP
+        'is_active',         // Trạng thái tài khoản (true/false)
+        'is_admin',          // Quyền quản trị (true/false)
     ];
 
     /**
@@ -31,6 +37,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'otp_code',
     ];
 
     /**
@@ -42,7 +49,23 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
+            'otp_expires_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'is_admin' => 'boolean',
         ];
+    }
+    public function isAdmin(): bool
+    {
+        return $this->is_admin === true;
+    }
+
+    /**
+     * Quan hệ: Một User có thể có nhiều đơn hàng (nếu bạn làm bảng orders).
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
     }
 }

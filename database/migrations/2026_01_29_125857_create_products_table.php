@@ -12,20 +12,24 @@ return new class extends Migration {
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            // $table->unsignedBigInteger('category_id')->nullable();
-            // $table->foreign('category_id')->references('id')->on('categories');
-            $table->foreignId('category_id')
-                ->nullable()
-                ->constrained()
-                ->onDelete('set null'); 
+            $table->foreignId('category_id')->constrained();
             $table->string('name');
-            $table->decimal('price', 10, 2);
-            $table->decimal('sale_price', 10, 2)->nullable();
-            $table->integer('stock')->default(0);
-            $table->text('description')->nullable();
-            $table->string('image')->nullable();
-            $table->boolean('is_deleted')->default(false);
-            $table->boolean('is_active')->default(true);
+            $table->string('slug')->unique();
+            $table->string('sku')->unique();
+            $table->decimal('price', 15, 2);
+
+            // Quản lý kho và trạng thái
+            $table->integer('stock')->default(1); // Số lượng tồn kho
+            $table->boolean('is_active')->default(true); // Hiện/Ẩn sản phẩm
+
+            // Đặc thù đồ cổ
+            $table->string('period')->nullable();     // Niên đại
+            $table->string('material')->nullable();   // Chất liệu
+            $table->string('condition')->nullable();  // Tình trạng
+            $table->string('origin')->nullable();     // Xuất xứ
+            $table->longText('content')->nullable();  // Bài viết lịch sử
+
+            $table->softDeletes();
             $table->timestamps();
         });
     }
