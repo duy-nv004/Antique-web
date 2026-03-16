@@ -4,19 +4,15 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Category;
-use App\Models\Product;
 
-class HomeController extends Controller
+class ShopController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $categories = Category::all();
-        $products = Product::with('mainImage')->get();
-        return view('client.home', compact('categories', 'products'));
+        return view('client.shop');
     }
 
     /**

@@ -10,25 +10,6 @@
     <li class="nav-item d-none d-sm-inline-block">
       <a href="#" class="nav-link">Contact</a>
     </li>
-    <li class="nav-item d-none d-sm-inline-block">
-      <a href="{{ route('products.index') }}" class="nav-link">Product</a>
-    </li>
-    <li class="nav-item dropdown">
-      <a id="dropdownSubMenu1" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-        class="nav-link dropdown-toggle">Quản lý danh mục</a>
-      <ul aria-labelledby="dropdownSubMenu1" class="dropdown-menu border-0 shadow" style="left: 0px; right: inherit;">
-        <li><a href="{{ route('categories.index') }}" class="dropdown-item">xem danh sách </a></li>
-        <li><a href="{{ route('categories.create') }}" class="dropdown-item">thêm mới</a></li>
-      </ul>
-    </li>
-    <li class="nav-item dropdown">
-      <a id="dropdownSubMenu1" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-        class="nav-link dropdown-toggle">Quản lý sản phẩm </a>
-      <ul aria-labelledby="dropdownSubMenu1" class="dropdown-menu border-0 shadow" style="left: 0px; right: inherit;">
-        <li><a href="{{ route('products.index') }}" class="dropdown-item">xem danh sách </a></li>
-        <li><a href="{{ route('products.create') }}" class="dropdown-item">thêm mới</a></li>
-      </ul>
-    </li>
   </ul>
 
   <!-- Right navbar links -->
