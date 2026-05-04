@@ -16,12 +16,21 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
+        $name = fake()->unique()->words(3, true);
         return [
-            "name"=>fake()->words(3,true),
-            "price"=>fake()->randomFloat(2,1,1000),
-            "quantity"=>fake()->numberBetween(1,100), 
-            "created_at"=>now(),
-            "updated_at"=>now(),
+            'category_id' => \App\Models\Category::factory(),
+            'name' => ucfirst($name),
+            'slug' => \Illuminate\Support\Str::slug($name),
+            'sku' => strtoupper(fake()->unique()->bothify('ANT-####-??')),
+            'price' => fake()->randomFloat(2, 500, 50000),
+            'stock' => fake()->numberBetween(0, 10),
+            'is_active' => true,
+            'availability_status' => fake()->randomElement(['in_stock', 'sold', 'display']),
+            'period' => fake()->randomElement(['Thế kỷ 18', 'Triều Nguyễn', 'Nhà Minh', 'Pháp thuộc', 'Thế kỷ 19']),
+            'material' => fake()->randomElement(['Gỗ trắc', 'Sứ xanh trắng', 'Đồng thau', 'Ngọc bích', 'Gỗ sưa']),
+            'condition' => fake()->randomElement(['Nguyên bản', 'Phục chế nhẹ', 'Hơi trầy xước', 'Hoàn hảo']),
+            'origin' => fake()->randomElement(['Việt Nam', 'Trung Hoa', 'Pháp', 'Nhật Bản']),
+            'content' => fake()->paragraphs(3, true),
         ];
     }
 }

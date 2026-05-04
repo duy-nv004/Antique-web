@@ -5,19 +5,45 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use App\Http\Middleware\CheckTimeAccess;
-use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Str;
 use App\Models\ProductImage;
 use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with('category', 'images')->latest()->paginate(10);
-        return view('admin.product.index', compact('products'));
+        $query = Product::with('category', 'images')->latest();
+
+        // Lọc theo từ khóa (tên hoặc SKU)
+        if ($request->filled('keyword')) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->keyword . '%')
+                  ->orWhere('sku', 'like', '%' . $request->keyword . '%');
+            });
+        }
+
+        // Lọc theo danh mục
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        // Lọc theo trạng thái hiển thị
+        if ($request->filled('is_active')) {
+            $query->where('is_active', $request->is_active);
+        }
+
+        // Lọc theo trạng thái hàng hóa
+        if ($request->filled('status')) {
+            $query->where('availability_status', $request->status);
+        }
+
+        $products = $query->paginate(10)->withQueryString();
+        $categories = Category::all();
+
+        return view('admin.product.index', compact('products', 'categories'));
     }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -32,40 +58,38 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->file('images'));
         DB::beginTransaction();
         try {
-            // Tạo sản phẩm
             $product = new Product;
-            $product->category_id = $request->category_id;
-            $product->name = $request->name;
-            $product->slug = Str::slug($request->name) . '-' . time();
-            $product->sku = $request->sku ?? 'DC-' . strtoupper(Str::random(6));
-            $product->price = $request->price;
-            $product->stock = $request->stock;
-            $product->period = $request->period; // Niên đại
-            $product->material = $request->material; // Chất liệu
-            $product->condition = $request->condition;
-            $product->origin = $request->origin;
-            $product->content = $request->input('content');
-            $product->is_active = $request->is_active;
+            $product->category_id        = $request->category_id;
+            $product->name               = $request->name;
+            $product->slug               = Str::slug($request->name) . '-' . time();
+            $product->sku                = $request->sku ?? 'DC-' . strtoupper(Str::random(6));
+            $product->price              = $request->price;
+            $product->stock              = $request->stock ?? 1;
+            $product->period             = $request->period;
+            $product->material           = $request->material;
+            $product->condition          = $request->condition;
+            $product->origin             = $request->origin;
+            $product->content            = $request->input('content');
+            $product->is_active          = $request->is_active ?? 1;
+            $product->availability_status = $request->availability_status ?? 'in_stock';
             $product->save();
 
             // Xử lý upload nhiều ảnh
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $index => $file) {
                     $path = $file->store('products', 'public');
-
                     ProductImage::create([
                         'product_id' => $product->id,
                         'image_path' => $path,
-                        'is_main' => ($index == 0) ? 1 : 0, // Ảnh đầu tiên làm ảnh đại diện
+                        'is_main'    => ($index == 0) ? 1 : 0,
                     ]);
                 }
             }
 
             DB::commit();
-            return redirect()->route('products.index')->with('success', 'Thêm đồ cổ thành công!');
+            return redirect()->route('admin.products.index')->with('success', 'Thêm đồ cổ thành công!');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
@@ -77,7 +101,7 @@ class ProductController extends Controller
      */
     public function show(int $id)
     {
-        $products = Product::find($id);
+        $products   = Product::with('images', 'category')->findOrFail($id);
         $categories = Category::all();
         return view('admin.product.detail', compact('products', 'categories'));
     }
@@ -87,7 +111,7 @@ class ProductController extends Controller
      */
     public function edit(string $id)
     {
-        $product = Product::findOrFail($id);
+        $product    = Product::with('images')->findOrFail($id);
         $categories = Category::all();
         return view('admin.product.edit', compact('product', 'categories'));
     }
@@ -97,30 +121,43 @@ class ProductController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $product = Product::find($id);
-        $product->category_id = $request->input('category_id');
-        $product->name = $request->input('name');
-        $product->price = $request->input('price');
-        $product->sale_price = $request->input('sale_price');
-        $product->stock = $request->input('stock');
-        $product->description = $request->input('description');
-        $product->is_active = $request->input('is_active');
+        $product = Product::findOrFail($id);
+        $product->category_id         = $request->input('category_id');
+        $product->name                = $request->input('name');
+        $product->slug                = Str::slug($request->input('name')) . '-' . $product->id;
+        $product->price               = $request->input('price');
+        $product->stock               = $request->input('stock', 1);
+        $product->period              = $request->input('period');
+        $product->material            = $request->input('material');
+        $product->condition           = $request->input('condition');
+        $product->origin              = $request->input('origin');
+        $product->content             = $request->input('content');
+        $product->is_active           = $request->input('is_active', 1);
+        $product->availability_status = $request->input('availability_status', 'in_stock');
         $product->save();
-        return redirect('/products');
+
+        // Xử lý upload ảnh mới nếu có
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $path = $file->store('products', 'public');
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image_path' => $path,
+                    'is_main'    => 0,
+                ]);
+            }
+        }
+
+        return redirect()->route('admin.products.index')->with('success', 'Cập nhật sản phẩm thành công!');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource from storage (soft delete).
      */
     public function destroy(string $id)
     {
         $product = Product::findOrFail($id);
-        if ($product->is_deleted == true) {
-            $product->is_deleted = false;
-        } else {
-            $product->is_deleted = true;
-        }
-        $product->save();
-        return redirect('/products');
+        $product->delete(); // SoftDelete
+        return redirect()->route('admin.products.index')->with('success', 'Đã xóa sản phẩm!');
     }
 }

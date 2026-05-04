@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Category;
+use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
@@ -30,14 +31,20 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'name' => 'required|max:255',
+        ]);
+
         $category = new Category();
         $category->name = $request->input('name');
+        $category->slug = Str::slug($request->input('name')) . '-' . time();
         $category->description = $request->input('description');
-        $category->image = $request->input('image');
-        $category->parent_id = $request->input('parent_id', 0);
+        $parentId = $request->input('parent_id');
+        $category->parent_id = ($parentId == 0 || empty($parentId)) ? null : $parentId;
+        $category->is_active = $request->input('is_active', 1);
         $category->save();
 
-        return redirect('categories');
+        return redirect()->route('admin.categories.index')->with('success', 'Thêm danh mục thành công');
     }
 
     /**
@@ -45,8 +52,8 @@ class CategoryController extends Controller
      */
     public function show(string $id)
     {
-        $categories = Category::find($id);
-        return view('admin.category.detail', compact('categories'));
+        $category = Category::findOrFail($id);
+        return view('admin.category.detail', compact('category'));
     }
 
     /**
@@ -55,7 +62,8 @@ class CategoryController extends Controller
     public function edit(string $id)
     {
         $category = Category::findOrFail($id);
-        return view('admin.category.edit', compact('category'));
+        $categories = Category::where('id', '!=', $id)->get();
+        return view('admin.category.edit', compact('category', 'categories'));
     }
 
     /**
@@ -63,14 +71,20 @@ class CategoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $category = Category::find($id);
+        $request->validate([
+            'name' => 'required|max:255',
+        ]);
+
+        $category = Category::findOrFail($id);
         $category->name = $request->input('name');
+        $category->slug = Str::slug($request->input('name')) . '-' . time();
         $category->description = $request->input('description');
-        $category->image = $request->input('image');
-        $category->parent_id = $request->input('parent_id', 0);
+        $parentId = $request->input('parent_id');
+        $category->parent_id = ($parentId == 0 || empty($parentId)) ? null : $parentId;
+        $category->is_active = $request->input('is_active', 1);
         $category->save();
 
-        return redirect('categories');
+        return redirect()->route('admin.categories.index')->with('success', 'Cập nhật danh mục thành công');
     }
 
     /**
@@ -79,12 +93,7 @@ class CategoryController extends Controller
     public function destroy(string $id)
     {
         $category = Category::findOrFail($id);
-        if ($category->is_deleted == 0) {
-            $category->is_deleted = 1;
-        } else {
-            $category->is_deleted = 0;
-        }
-        $category->save();
-        return redirect('categories');
+        $category->delete();
+        return redirect()->route('admin.categories.index')->with('success', 'Xóa danh mục thành công');
     }
 }

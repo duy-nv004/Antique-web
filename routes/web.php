@@ -1,52 +1,71 @@
 <?php
 
-use App\Http\Middleware\CheckTimeAccess;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\testController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\SettingController;
+use App\Http\Controllers\AuthController;
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
-Route::get('/', function () {
-    return redirect()->route('home.index');
-});
-Route::get('/test', function () {
-    // return view('home');
-    return response()->json(['message' => 'This is a test route']);
-});
+// =====================================================================
+// AUTH ADMIN
+// =====================================================================
+Route::get('admin/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('admin/login', [AuthController::class, 'login'])->name('login.post');
 
-Route::prefix('admin')->group(function () {
+// =====================================================================
+// ADMIN ROUTES — Quản trị (cần auth admin)
+// =====================================================================
+Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::resource('categories', CategoryController::class);
     Route::resource('products', ProductController::class);
 
-});
-Route::get('login', [AuthController::class, 'showLoginForm'])->name("login");
-Route::post('login', [AuthController::class, 'login'])->name("login.post");
-Route::get('register', [AuthController::class, 'showRegisterForm'])->name("register");
-Route::post('register', [AuthController::class, 'register'])->name("register.post");
-Route::fallback(function () {
-    return view('errors.404error');
-    // return "404 Not Found. The requested route does not exist.";
-});
-Route::resource('tests', testController::class);
-Route::post('session', function (Request $request) {
-    // $request->session()->put('key', 'value');
-    $name = session()->all();
-    return response()->json($name);
-})->name('session');
-Route::get('age', [AuthController::class, 'showAgeForm'])->name('age');
-Route::post('age', [AuthController::class, 'checkAge'])->name('checkAge.post');
+    // Cài đặt liên hệ (Settings)
+    Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::post('settings', [SettingController::class, 'update'])->name('settings.update');
 
-Route::get('/admin', function () {
-    return view('layout.admin');
+    // Đổi mật khẩu
+    Route::get('change-password', [AuthController::class, 'showChangePasswordForm'])->name('change-password');
+    Route::post('change-password', [AuthController::class, 'changePassword'])->name('change-password.post');
+
+    // Logout
+    Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+
+    // Dashboard
+    Route::get('/', function () {
+        return view('admin.dashboard');
+    })->name('dashboard');
 });
 
-Route::resource('home', App\Http\Controllers\Client\HomeController::class);
-// Route::resource('shop', App\Http\Controllers\Client\ShopController::class);
-Route::get('/shop', [App\Http\Controllers\Client\ShopController::class, 'index'])->name('shop.index');
+// =====================================================================
+// API ROUTES — Dùng cho React Frontend
+// =====================================================================
+Route::prefix('api')->group(function () {
+    // Products
+    Route::get('/products', [App\Http\Controllers\Api\ProductController::class, 'index']);
+    Route::get('/products/{id}', [App\Http\Controllers\Api\ProductController::class, 'show']);
+    Route::post('/contact-click', [App\Http\Controllers\Api\ProductController::class, 'recordClick']);
 
+    // Categories
+    Route::get('/categories', function () {
+        return response()->json(\App\Models\Category::where('is_active', 1)->get());
+    });
 
+    // Settings
+    Route::get('/settings', function () {
+        return response()->json(\App\Models\Setting::allAsArray());
+    });
 
+    // Admin Stats
+    Route::get('/admin/stats', [App\Http\Controllers\Api\AdminStatsController::class, 'index']);
+});
+
+// =====================================================================
+// CLIENT ROUTES — Tất cả điều hướng cho React SPA
+// =====================================================================
+Route::get('/{any}', function () {
+    return view('layout.react');
+})->where('any', '^(?!api|admin).*$');
+
+Route::get('/', function () {
+    return view('layout.react');
+});

@@ -61,11 +61,4 @@ class User extends Authenticatable
         return $this->is_admin === true;
     }
 
-    /**
-     * Quan hệ: Một User có thể có nhiều đơn hàng (nếu bạn làm bảng orders).
-     */
-    public function orders()
-    {
-        return $this->hasMany(Order::class);
-    }
 }

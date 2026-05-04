@@ -17,13 +17,34 @@ class Product extends Model
         'sku',
         'price',
         'stock',
-        'period',    // Niên đại
-        'material',  // Chất liệu
-        'condition', // Tình trạng
-        'origin',    // Xuất xứ
-        'content',   // Mô tả chi tiết
+        'period',               // Niên đại
+        'material',             // Chất liệu
+        'condition',            // Tình trạng
+        'origin',               // Xuất xứ
+        'content',              // Mô tả chi tiết
         'is_active',
+        'availability_status',  // in_stock | sold | display
     ];
+
+    /**
+     * Nhãn hiển thị cho availability_status
+     */
+    public function getAvailabilityLabelAttribute(): string
+    {
+        return match($this->availability_status) {
+            'sold'    => 'Đã bán',
+            'display' => 'Trưng bày',
+            default   => 'Còn hàng',
+        };
+    }
+
+    /**
+     * Scope: chỉ lấy sản phẩm đang hiển thị công khai
+     */
+    public function scopeVisible($query)
+    {
+        return $query->where('is_active', 1);
+    }
     public function category()
     {
         return $this->belongsTo(Category::class);
