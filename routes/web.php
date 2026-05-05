@@ -15,7 +15,7 @@ Route::post('admin/login', [AuthController::class, 'login'])->name('login.post')
 // =====================================================================
 // ADMIN ROUTES — Quản trị (cần auth admin)
 // =====================================================================
-Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('categories', CategoryController::class);
     Route::resource('products', ProductController::class);
 
@@ -55,8 +55,8 @@ Route::prefix('api')->group(function () {
         return response()->json(\App\Models\Setting::allAsArray());
     });
 
-    // Admin Stats
-    Route::get('/admin/stats', [App\Http\Controllers\Api\AdminStatsController::class, 'index']);
+    // Admin Stats (Protected)
+    Route::get('/admin/stats', [App\Http\Controllers\Api\AdminStatsController::class, 'index'])->middleware(['auth', 'admin']);
 });
 
 // =====================================================================

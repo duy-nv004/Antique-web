@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use App\Models\ProductImage;
 use Illuminate\Support\Facades\DB;
+use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 
 class ProductController extends Controller
 {
@@ -56,31 +57,21 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
         DB::beginTransaction();
         try {
-            $product = new Product;
-            $product->category_id        = $request->category_id;
-            $product->name               = $request->name;
-            $product->slug               = Str::slug($request->name) . '-' . time();
-            $product->sku                = $request->sku ?? 'DC-' . strtoupper(Str::random(6));
-            $product->price              = $request->price;
-            $product->stock              = $request->stock ?? 1;
-            $product->period             = $request->period;
-            $product->material           = $request->material;
-            $product->condition          = $request->condition;
-            $product->origin             = $request->origin;
-            $product->content            = $request->input('content');
-            $product->is_active          = $request->is_active ?? 1;
-            $product->availability_status = $request->availability_status ?? 'in_stock';
-            $product->save();
+            // Loại bỏ images khỏi dữ liệu khi tạo Product
+            $product = Product::create($request->safe()->except(['images']));
 
             // Xử lý upload nhiều ảnh
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $index => $file) {
-                    $path = $file->store('products', 'public');
-                    ProductImage::create([
+                    $fileName = time() . '_' . $file->getClientOriginalName();
+                    $file->move(public_path('storage/products'), $fileName);
+                    $path = 'products/' . $fileName;
+
+                    \App\Models\ProductImage::create([
                         'product_id' => $product->id,
                         'image_path' => $path,
                         'is_main'    => ($index == 0) ? 1 : 0,
@@ -119,36 +110,53 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateProductRequest $request, string $id)
     {
         $product = Product::findOrFail($id);
-        $product->category_id         = $request->input('category_id');
-        $product->name                = $request->input('name');
-        $product->slug                = Str::slug($request->input('name')) . '-' . $product->id;
-        $product->price               = $request->input('price');
-        $product->stock               = $request->input('stock', 1);
-        $product->period              = $request->input('period');
-        $product->material            = $request->input('material');
-        $product->condition           = $request->input('condition');
-        $product->origin              = $request->input('origin');
-        $product->content             = $request->input('content');
-        $product->is_active           = $request->input('is_active', 1);
-        $product->availability_status = $request->input('availability_status', 'in_stock');
-        $product->save();
+        
+        DB::beginTransaction();
+        try {
+            // Cập nhật thông tin cơ bản, loại bỏ các trường không thuộc bảng products
+            $product->update($request->safe()->except(['images', 'delete_images', 'main_image_id']));
 
-        // Xử lý upload ảnh mới nếu có
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $file) {
-                $path = $file->store('products', 'public');
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'image_path' => $path,
-                    'is_main'    => 0,
-                ]);
+            // 1. Xử lý xóa ảnh cũ
+            if ($request->filled('delete_images')) {
+                foreach ($request->delete_images as $imageId) {
+                    $image = \App\Models\ProductImage::find($imageId);
+                    if ($image) {
+                        \Illuminate\Support\Facades\Storage::disk('public')->delete($image->image_path);
+                        $image->delete();
+                    }
+                }
             }
-        }
 
-        return redirect()->route('admin.products.index')->with('success', 'Cập nhật sản phẩm thành công!');
+            // 2. Xử lý đặt ảnh chính
+            if ($request->filled('main_image_id')) {
+                \App\Models\ProductImage::where('product_id', $product->id)->update(['is_main' => 0]);
+                \App\Models\ProductImage::where('id', $request->main_image_id)->update(['is_main' => 1]);
+            }
+
+            // 3. Xử lý upload ảnh mới nếu có
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $file) {
+                    $fileName = time() . '_' . $file->getClientOriginalName();
+                    $file->move(public_path('storage/products'), $fileName);
+                    $path = 'products/' . $fileName;
+
+                    \App\Models\ProductImage::create([
+                        'product_id' => $product->id,
+                        'image_path' => $path,
+                        'is_main'    => 0,
+                    ]);
+                }
+            }
+
+            DB::commit();
+            return redirect()->route('admin.products.index')->with('success', 'Cập nhật sản phẩm thành công!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
     }
 
     /**

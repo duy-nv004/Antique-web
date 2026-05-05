@@ -51,33 +51,50 @@
 
             <!-- Images Section -->
             <div class="bg-white rounded-3xl p-8 shadow-sm border border-vintage-200">
-                <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1 block mb-4">Hình ảnh vật phẩm</label>
+                <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1 block mb-4">Quản lý hình ảnh</label>
                 
                 <!-- Current Images -->
                 @if($product->images && $product->images->count() > 0)
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8 pb-8 border-b border-vintage-100">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-8 pb-8 border-b border-vintage-100">
                         @foreach($product->images as $img)
-                            <div class="aspect-square rounded-2xl overflow-hidden border border-vintage-200 relative group shadow-sm">
-                                <img src="{{ asset('storage/' . $img->image_path) }}" class="w-full h-full object-cover">
-                                @if($img->is_main)
-                                    <div class="absolute inset-0 bg-amber-700/60 flex items-center justify-center">
-                                        <span class="text-white text-[10px] font-bold uppercase tracking-widest">Ảnh chính</span>
-                                    </div>
-                                @endif
+                            <div class="aspect-square rounded-2xl overflow-hidden border border-vintage-200 relative group shadow-sm" id="img-container-{{ $img->id }}">
+                                <img src="{{ asset('storage/' . $img->image_path) }}" class="w-full h-full object-cover {{ $img->is_main ? 'ring-4 ring-amber-700 ring-inset' : '' }}">
+                                
+                                <!-- Delete Overlay (Hidden by default) -->
+                                <div id="delete-overlay-{{ $img->id }}" class="absolute inset-0 bg-red-500/40 hidden items-center justify-center backdrop-blur-[2px] z-10">
+                                    <span class="bg-white text-red-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg">Sẽ bị xóa</span>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                                    <button type="button" onclick="toggleDelete({{ $img->id }})" class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white text-red-500 rounded-lg shadow-lg hover:bg-red-500 hover:text-white transition-all">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                    
+                                    <label class="absolute bottom-2 left-2 right-2 cursor-pointer">
+                                        <input type="radio" name="main_image_id" value="{{ $img->id }}" {{ $img->is_main ? 'checked' : '' }} class="hidden peer">
+                                        <div class="w-full py-2 bg-white/90 text-stone-500 rounded-lg text-[10px] font-bold uppercase text-center peer-checked:bg-amber-700 peer-checked:text-white transition-all shadow-sm">
+                                            {{ $img->is_main ? '★ Ảnh chính' : 'Đặt làm ảnh chính' }}
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- Hidden inputs for deletion -->
+                                <input type="checkbox" name="delete_images[]" value="{{ $img->id }}" id="delete-input-{{ $img->id }}" class="hidden">
                             </div>
                         @endforeach
                     </div>
                 @endif
 
                 <!-- Upload New -->
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="image-preview-container">
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" id="image-preview-container">
                     <label class="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-vintage-200 rounded-2xl cursor-pointer hover:border-amber-700 hover:bg-amber-50 transition-all text-stone-400 hover:text-amber-700">
                         <i data-lucide="plus" class="w-8 h-8 mb-2"></i>
-                        <span class="text-[10px] font-bold uppercase tracking-widest text-center px-1">Thêm ảnh</span>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-center px-1">Thêm ảnh mới</span>
                         <input type="file" name="images[]" multiple accept="image/*" class="hidden" onchange="previewImages(this)">
                     </label>
                 </div>
-                <p class="text-[10px] text-stone-400 mt-4 italic">* Các ảnh mới sẽ được bổ sung vào bộ sưu tập hiện tại.</p>
+                <p class="text-[10px] text-stone-400 mt-4 italic">* Bạn có thể chọn nhiều ảnh mới để bổ sung vào bộ sưu tập.</p>
             </div>
         </div>
 
@@ -154,6 +171,20 @@
 </div>
 
 <script>
+    function toggleDelete(id) {
+        const input = document.getElementById('delete-input-' + id);
+        const overlay = document.getElementById('delete-overlay-' + id);
+        
+        input.checked = !input.checked;
+        if (input.checked) {
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+        } else {
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+        }
+    }
+
     function previewImages(input) {
         const container = document.getElementById('image-preview-container');
         const previews = container.querySelectorAll('.preview-item');

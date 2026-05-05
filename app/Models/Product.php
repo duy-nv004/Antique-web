@@ -27,6 +27,23 @@ class Product extends Model
     ];
 
     /**
+     * Tự động tạo slug khi lưu sản phẩm
+     */
+    protected static function booted()
+    {
+        static::saving(function ($product) {
+            // Tự động tạo SKU nếu trống
+            if (empty($product->sku)) {
+                $product->sku = 'DC-' . strtoupper(\Illuminate\Support\Str::random(6));
+            }
+
+            if (empty($product->slug) || $product->isDirty('name')) {
+                $product->slug = \Illuminate\Support\Str::slug($product->name) . '-' . time();
+            }
+        });
+    }
+
+    /**
      * Nhãn hiển thị cho availability_status
      */
     public function getAvailabilityLabelAttribute(): string

@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Category;
-use Illuminate\Support\Str;
+use App\Http\Requests\StoreCategoryRequest;
 
 class CategoryController extends Controller
 {
@@ -29,21 +28,9 @@ class CategoryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreCategoryRequest $request)
     {
-        $request->validate([
-            'name' => 'required|max:255',
-        ]);
-
-        $category = new Category();
-        $category->name = $request->input('name');
-        $category->slug = Str::slug($request->input('name')) . '-' . time();
-        $category->description = $request->input('description');
-        $parentId = $request->input('parent_id');
-        $category->parent_id = ($parentId == 0 || empty($parentId)) ? null : $parentId;
-        $category->is_active = $request->input('is_active', 1);
-        $category->save();
-
+        Category::create($request->validated());
         return redirect()->route('admin.categories.index')->with('success', 'Thêm danh mục thành công');
     }
 
@@ -69,21 +56,10 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(StoreCategoryRequest $request, string $id)
     {
-        $request->validate([
-            'name' => 'required|max:255',
-        ]);
-
         $category = Category::findOrFail($id);
-        $category->name = $request->input('name');
-        $category->slug = Str::slug($request->input('name')) . '-' . time();
-        $category->description = $request->input('description');
-        $parentId = $request->input('parent_id');
-        $category->parent_id = ($parentId == 0 || empty($parentId)) ? null : $parentId;
-        $category->is_active = $request->input('is_active', 1);
-        $category->save();
-
+        $category->update($request->validated());
         return redirect()->route('admin.categories.index')->with('success', 'Cập nhật danh mục thành công');
     }
 

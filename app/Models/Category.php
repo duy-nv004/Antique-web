@@ -18,6 +18,18 @@ class Category extends Model
         'parent_id',
         'is_active',
     ];
+
+    /**
+     * Tự động tạo slug khi lưu danh mục
+     */
+    protected static function booted()
+    {
+        static::saving(function ($category) {
+            if (empty($category->slug) || $category->isDirty('name')) {
+                $category->slug = \Illuminate\Support\Str::slug($category->name) . '-' . time();
+            }
+        });
+    }
     public function products()
     {
         return $this->hasMany(Product::class);

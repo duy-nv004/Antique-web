@@ -25,7 +25,7 @@ class SettingsSeeder extends Seeder
             ],
             [
                 'key'   => 'hotline',
-                'value' => '0912345678',
+                'value' => '0985408685',
                 'label' => 'Số Hotline',
             ],
             [
