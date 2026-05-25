@@ -6,8 +6,7 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import ProductList from "./pages/ProductList";
 import ProductDetail from "./pages/ProductDetail";
-import AdminDashboard from "./pages/admin/Dashboard";
-import AdminProductManager from "./pages/admin/ProductManager";
+import Contact from "./pages/Contact";
 
 function App() {
     const [settings, setSettings] = useState({});
@@ -25,14 +24,11 @@ function App() {
                 
                 <main className="flex-grow">
                     <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/home" element={<Home />} />
-                        <Route path="/products" element={<ProductList />} />
-                        <Route path="/products/:id" element={<ProductDetail settings={settings} />} />
-                        
-                        {/* Admin Routes */}
-                        <Route path="/admin" element={<AdminDashboard />} />
-                        <Route path="/admin/products" element={<AdminProductManager />} />
+                        <Route path="/" element={<Home settings={settings} />} />
+                        <Route path="/home" element={<Home settings={settings} />} />
+                        <Route path="/products" element={<ProductList settings={settings} />} />
+                        <Route path="/products/:slug" element={<ProductDetail settings={settings} />} />
+                        <Route path="/contact" element={<Contact settings={settings} />} />
                     </Routes>
                 </main>
 

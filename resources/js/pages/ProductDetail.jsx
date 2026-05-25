@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { MessageCircle, Phone, History, ShieldCheck, MapPin, ArrowLeft } from "lucide-react";
+import { MessageCircle, Phone, History, ShieldCheck, MapPin, ArrowLeft, Paintbrush, Sparkles } from "lucide-react";
 import axios from "axios";
 
 function ProductDetail({ settings }) {
-    const { id } = useParams();
+    const { slug } = useParams();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [mainImage, setMainImage] = useState("");
 
     useEffect(() => {
         setLoading(true);
-        axios.get(`/api/products/${id}`)
+        axios.get(`/api/products/${slug}`)
             .then((res) => {
                 const data = res.data;
                 setProduct(data);
@@ -24,7 +24,7 @@ function ProductDetail({ settings }) {
                 console.error("Error fetching product detail:", err);
                 setLoading(false);
             });
-    }, [id]);
+    }, [slug]);
 
     const handleContactClick = async (type) => {
         // Record click in database
@@ -34,11 +34,30 @@ function ProductDetail({ settings }) {
             console.error("Error recording click:", err);
         }
 
+        const productUrl = window.location.href;
+
+        // Copy product URL to clipboard
+        try {
+            await navigator.clipboard.writeText(productUrl);
+        } catch (clipboardErr) {
+            console.error("Failed to copy link:", clipboardErr);
+        }
+
         // Redirect based on type
         if (type === "zalo" && settings?.zalo_phone) {
-            window.open(`https://zalo.me/${settings.zalo_phone}`, "_blank");
+            const zaloDest = `https://zalo.me/${settings.zalo_phone}?msg=${encodeURIComponent(productUrl)}`;
+            window.open(zaloDest, "_blank");
         } else if (type === "messenger" && settings?.facebook_url) {
-            window.open(settings.facebook_url, "_blank");
+            let destUrl = settings.facebook_url;
+            try {
+                if (destUrl.includes("m.me")) {
+                    const separator = destUrl.includes("?") ? "&" : "?";
+                    destUrl = `${destUrl}${separator}text=${encodeURIComponent(productUrl)}`;
+                }
+            } catch (urlErr) {
+                console.error("Failed to parse Facebook URL:", urlErr);
+            }
+            window.open(destUrl, "_blank");
         } else if (type === "phone" && settings?.hotline) {
             window.location.href = `tel:${settings.hotline}`;
         }
@@ -68,20 +87,23 @@ function ProductDetail({ settings }) {
 
     return (
         <div className="bg-stone-50 min-h-screen pt-24 pb-20">
-            <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Breadcrumbs */}
-                <nav className="mb-10 flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-stone-400">
+                <nav className="mb-10 flex items-center gap-2 text-[10px] sm:text-xs uppercase tracking-[0.2em] font-medium text-stone-400">
                     <Link to="/" className="hover:text-amber-800 transition-colors">Trang chủ</Link>
                     <span className="text-stone-300">/</span>
-                    <Link to="/products" className="hover:text-amber-800 transition-colors">Bộ sưu tập</Link>
+                    <Link to="/products" className="hover:text-amber-800 transition-colors">
+                        {product.category?.name || "Cổ vật"}
+                    </Link>
                     <span className="text-stone-300">/</span>
-                    <span className="text-amber-900 truncate">{product.name}</span>
+                    <span className="text-amber-900 font-semibold truncate">{product.name}</span>
                 </nav>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-                    {/* Image Gallery */}
-                    <div className="space-y-6">
-                        <div className="aspect-[4/5] overflow-hidden rounded-2xl shadow-2xl bg-white border border-stone-200 group">
+                {/* Main Product Info Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+                    {/* Left Column: Image Gallery */}
+                    <div className="lg:col-span-5 space-y-6">
+                        <div className="aspect-[4/5] max-h-[420px] md:max-h-[480px] w-full overflow-hidden rounded-lg shadow-xl bg-white border border-stone-200/50 group flex items-center justify-center">
                             <img 
                                 src={mainImage} 
                                 alt={product.name}
@@ -89,118 +111,185 @@ function ProductDetail({ settings }) {
                             />
                         </div>
                         <div className="grid grid-cols-4 gap-4">
-                            {Array.isArray(product.images) && product.images.map((img, idx) => (
-                                <button 
-                                    key={idx}
-                                    onClick={() => setMainImage(`/storage/${img.image_path}`)}
-                                    className={`aspect-square rounded-xl overflow-hidden transition-all shadow-md transform hover:-translate-y-1 ${
-                                        mainImage === `/storage/${img.image_path}` 
-                                            ? "ring-4 ring-amber-700 opacity-100" 
-                                            : "opacity-60 hover:opacity-100"
-                                    }`}
-                                >
-                                    <img src={`/storage/${img.image_path}`} alt="" className="w-full h-full object-cover" />
-                                </button>
-                            ))}
+                            {Array.isArray(product.images) && product.images.map((img, idx) => {
+                                const imgUrl = `/storage/${img.image_path}`;
+                                return (
+                                    <button 
+                                        key={idx}
+                                        onClick={() => setMainImage(imgUrl)}
+                                        className={`aspect-square rounded-lg overflow-hidden transition-all shadow-sm border ${
+                                            mainImage === imgUrl 
+                                                ? "border-amber-700 ring-2 ring-amber-700/20 opacity-100 scale-[0.98]" 
+                                                : "border-stone-200 opacity-60 hover:opacity-100"
+                                        }`}
+                                    >
+                                        <img src={imgUrl} alt="" className="w-full h-full object-cover" />
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 
-                    {/* Product Info */}
-                    <div className="flex flex-col">
-                        <div className="mb-8 border-b border-stone-200 pb-8">
-                            <span className="inline-block text-[10px] text-amber-700 font-bold uppercase tracking-[0.2em] mb-4">
-                                {product.category?.name || "Tuyệt Phẩm Đồ Cổ"}
+                    {/* Right Column: Product Detail & Actions */}
+                    <div className="lg:col-span-7 flex flex-col justify-start">
+                        {/* Tags */}
+                        <div className="flex flex-wrap gap-2 mb-4">
+                            {product.period && (
+                                <span className="bg-stone-900 text-stone-100 px-3 py-1 text-[10px] font-bold tracking-[0.15em] uppercase rounded-sm">
+                                    {product.period.toUpperCase()}
+                                </span>
+                            )}
+                            <span className="bg-[#FAF1D6] text-amber-950 border border-amber-300/30 px-3 py-1 text-[10px] font-bold tracking-[0.15em] uppercase rounded-sm">
+                                {product.availability_status === "sold" ? "ĐÃ BÁN" : product.availability_status === "display" ? "TRƯNG BÀY" : "HIẾM CÓ"}
                             </span>
-                            <h1 className="text-4xl md:text-5xl font-bold text-stone-900 mb-6 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                {product.name}
-                            </h1>
-                            
-                            <div className="flex flex-wrap gap-y-4 gap-x-8">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center">
-                                        <History className="w-5 h-5 text-amber-700" />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Niên đại</p>
-                                        <p className="text-sm font-bold text-stone-800">{product.period || "Thế kỷ 19"}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center">
-                                        <MapPin className="w-5 h-5 text-amber-700" />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Xuất xứ</p>
-                                        <p className="text-sm font-bold text-stone-800">{product.origin || "Việt Nam"}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center">
-                                        <ShieldCheck className="w-5 h-5 text-amber-700" />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Tình trạng</p>
-                                        <p className="text-sm font-bold text-stone-800">{product.condition || "Nguyên bản"}</p>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
-                        <div className="bg-white p-8 rounded-3xl shadow-xl shadow-stone-200 border border-stone-100 mb-10 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
-                            
-                            <div className="relative">
-                                <p className="text-stone-400 text-xs uppercase font-bold tracking-widest mb-2">Giá trị sưu tầm</p>
-                                <h3 className="text-3xl font-bold text-amber-800 mb-6">Liên hệ trực tiếp</h3>
-                                
-                                <div className="space-y-4">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <button 
-                                            onClick={() => handleContactClick("zalo")}
-                                            className="flex items-center justify-center gap-3 px-8 py-4 bg-stone-800 text-white font-bold rounded-2xl hover:bg-amber-800 transition-all shadow-lg hover:-translate-y-1"
-                                        >
-                                            <MessageCircle className="w-6 h-6" /> Nhận tư vấn Zalo
-                                        </button>
-                                        <a 
-                                            href={`tel:${settings?.hotline || "0985408685"}`}
-                                            className="flex items-center justify-center gap-3 px-8 py-4 bg-amber-700 text-white font-bold rounded-2xl hover:bg-amber-800 transition-all shadow-lg hover:-translate-y-1"
-                                        >
-                                            <Phone className="w-6 h-6" /> Gọi ngay Hotline
-                                        </a>
-                                    </div>
-                                    <p className="text-center text-xs text-stone-400 italic">
-                                        * Chúng tôi cam kết bảo mật thông tin và tư vấn tận tâm nhất.
-                                    </p>
-                                </div>
+                        {/* Product Title */}
+                        <h1 className="text-2xl md:text-3.5xl lg:text-4xl font-normal text-stone-900 mb-3 leading-tight font-serif">
+                            {product.name}
+                        </h1>
+
+                        {/* Tagline/Subtitle */}
+                        {product.period && (
+                            <div className="text-stone-500 font-serif italic text-base mb-6 flex items-center gap-3">
+                                <span className="w-8 h-[1px] bg-stone-300"></span>
+                                Kỷ vật triều đại {product.period}
                             </div>
+                        )}
+
+                        {/* Specifications Table */}
+                        <div className="border-t border-b border-stone-200 py-4 mb-6 space-y-3.5 font-sans">
+                            {product.sku && (
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-stone-400 uppercase tracking-widest text-xs font-semibold">MÃ SẢN PHẨM</span>
+                                    <span className="text-stone-900 font-bold tracking-wider">{product.sku}</span>
+                                </div>
+                            )}
+                            {product.condition && (
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-stone-400 uppercase tracking-widest text-xs font-semibold">TÌNH TRẠNG</span>
+                                    <span className="text-stone-900 font-medium">{product.condition}</span>
+                                </div>
+                            )}
+                            {product.material && (
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-stone-400 uppercase tracking-widest text-xs font-semibold">CHẤT LIỆU</span>
+                                    <span className="text-stone-900 font-medium">{product.material}</span>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Description Section */}
-                        <div className="space-y-10">
-                            <div className="relative">
-                                <h3 className="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-3" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                    <span className="w-12 h-[2px] bg-amber-700"></span>
-                                    Câu Chuyện Lịch Sử
-                                </h3>
-                                <div 
-                                    className="text-stone-600 leading-relaxed text-lg italic font-serif space-y-4"
-                                    dangerouslySetInnerHTML={{ __html: product.content || "Món đồ này mang trong mình những giá trị văn hóa và lịch sử vô giá đang chờ bạn khám phá..." }}
-                                />
-                            </div>
+                        {/* Short Consultation text */}
+                        <p className="text-stone-600 italic text-sm leading-relaxed mb-6">
+                            Quý khách quan tâm đến cổ vật này vui lòng liên hệ trực tiếp để nhận tư vấn chuyên sâu về xuất xứ và giá trị lịch sử.
+                        </p>
 
-                            <div className="grid grid-cols-2 gap-12 pt-10 border-t border-stone-200">
-                                <div>
-                                    <h4 className="text-stone-400 text-[10px] uppercase font-bold tracking-widest mb-3">Chất liệu chế tác</h4>
-                                    <p className="text-lg font-bold text-stone-800">{product.material || "Chưa xác định"}</p>
-                                </div>
-                                <div>
-                                    <h4 className="text-stone-400 text-[10px] uppercase font-bold tracking-widest mb-3">Kích thước / Trọng lượng</h4>
-                                    <p className="text-lg font-bold text-stone-800">Liên hệ tư vấn</p>
-                                </div>
+                        {/* Call to Actions */}
+                        <div className="space-y-4">
+                            {/* Zalo CTA */}
+                            <button 
+                                onClick={() => handleContactClick("zalo")}
+                                className="w-full bg-[#1C1714] text-[#EAD09D] hover:bg-stone-800 hover:text-white transition-all duration-300 py-4 px-6 flex items-center justify-center gap-3 font-semibold uppercase tracking-widest text-sm rounded border border-[#EAD09D]/20 shadow-md group"
+                            >
+                                <MessageCircle className="w-5 h-5 text-[#EAD09D] group-hover:scale-110 transition-transform" />
+                                Nhận tư vấn qua Zalo
+                            </button>
+
+                            {/* Messenger & Hotline */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <button 
+                                    onClick={() => handleContactClick("messenger")}
+                                    className="border border-stone-400 text-stone-800 hover:bg-stone-100 transition-colors py-3 px-4 flex items-center justify-center gap-2 uppercase tracking-widest text-xs font-semibold rounded"
+                                >
+                                    <MessageCircle className="w-4 h-4 text-stone-600" />
+                                    Messenger
+                                </button>
+                                <button 
+                                    onClick={() => handleContactClick("phone")}
+                                    className="border border-stone-400 text-stone-800 hover:bg-stone-100 transition-colors py-3 px-4 flex items-center justify-center gap-2 uppercase tracking-widest text-xs font-semibold rounded"
+                                >
+                                    <Phone className="w-4 h-4 text-stone-600" />
+                                    Hotline
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {/* Ornate Divider */}
+                <div className="my-20 flex items-center justify-center gap-6">
+                    <div className="h-[1px] bg-amber-800/20 flex-grow max-w-[200px]"></div>
+                    <div className="text-amber-800/80 text-sm tracking-widest">✦</div>
+                    <div className="h-[1px] bg-amber-800/20 flex-grow max-w-[200px]"></div>
+                </div>
+
+                {/* "Giá Trị Lịch Sử & Nghệ Thuật" Section */}
+                <div className="max-w-4xl mx-auto space-y-12">
+                    <div className="text-center space-y-6">
+                        <h2 className="text-3xl md:text-4xl font-serif italic text-stone-900">
+                            Giá Trị Lịch Sử & Nghệ Thuật
+                        </h2>
+                        <div 
+                            className="text-stone-600 leading-loose font-serif text-base md:text-lg space-y-6 italic max-w-3xl mx-auto text-center"
+                            dangerouslySetInnerHTML={{ __html: product.content || "Món đồ này mang trong mình những giá trị văn hóa và lịch sử vô giá đang chờ bạn khám phá..." }}
+                        />
+                    </div>
+                </div>
+
+                {/* Bottom Specifications Details Section */}
+                {(product.period || product.material || product.origin) && (
+                    <div className="mt-24 pt-16 border-t border-stone-200/80">
+                        <h3 className="text-center font-serif text-2xl md:text-3xl text-stone-900 mb-12">
+                            Thông Số Kỹ Thuật Chi Tiết
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 justify-center">
+                            {/* Card 1: Triều đại */}
+                            {product.period && (
+                                <div className="bg-stone-50 border border-stone-200/60 p-6 rounded-lg shadow-sm space-y-4">
+                                    <div className="w-10 h-10 rounded-full bg-amber-50/55 flex items-center justify-center">
+                                        <History className="w-5 h-5 text-amber-800" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <span className="text-stone-400 uppercase tracking-widest text-[10px] font-bold block">TRIỀU ĐẠI</span>
+                                        <span className="text-stone-800 font-semibold text-sm block">
+                                            {product.period}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Card 2: Dòng men */}
+                            {product.material && (
+                                <div className="bg-stone-50 border border-stone-200/60 p-6 rounded-lg shadow-sm space-y-4">
+                                    <div className="w-10 h-10 rounded-full bg-amber-50/55 flex items-center justify-center">
+                                        <Paintbrush className="w-5 h-5 text-amber-800" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <span className="text-stone-400 uppercase tracking-widest text-[10px] font-bold block">DÒNG MEN</span>
+                                        <span className="text-stone-800 font-semibold text-sm block">
+                                            {product.material}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Card 3: Xuất xứ */}
+                            {product.origin && (
+                                <div className="bg-stone-50 border border-stone-200/60 p-6 rounded-lg shadow-sm space-y-4">
+                                    <div className="w-10 h-10 rounded-full bg-amber-50/55 flex items-center justify-center">
+                                        <MapPin className="w-5 h-5 text-amber-800" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <span className="text-stone-400 uppercase tracking-widest text-[10px] font-bold block">XUẤT XỨ</span>
+                                        <span className="text-stone-800 font-semibold text-sm block">
+                                            {product.origin}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

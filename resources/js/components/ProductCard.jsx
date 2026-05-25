@@ -9,7 +9,9 @@ function ProductCard({ product, settings }) {
     const images = Array.isArray(product.images) ? product.images : [];
     const mainImage = images.find((img) => img.is_main === 1) || images[0];
     const imageUrl = mainImage
-        ? `/storage/${mainImage.image_path}`
+        ? (mainImage.image_path && mainImage.image_path.startsWith("http") 
+            ? mainImage.image_path 
+            : `/storage/${mainImage.image_path}`)
         : "/product/default.jpg";
 
     const availabilityConfig = {
@@ -39,7 +41,7 @@ function ProductCard({ product, settings }) {
                     {/* Dual Option Hover Overlay */}
                     <div className="absolute inset-0 bg-stone-900/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3 p-4">
                         <Link
-                            to={`/products/${product.id}`}
+                            to={`/products/${product.slug || product.id}`}
                             className="w-full max-w-[160px] bg-white text-stone-800 text-sm font-bold py-2.5 rounded-full hover:bg-amber-50 transition transform hover:-translate-y-1 flex items-center justify-center gap-2 shadow-lg"
                         >
                             <Info className="w-4 h-4" />
@@ -60,7 +62,7 @@ function ProductCard({ product, settings }) {
                     <div className="text-[10px] text-amber-700 font-bold uppercase tracking-widest mb-1">
                         {product.category?.name || "Đồ cổ"}
                     </div>
-                    <Link to={`/products/${product.id}`}>
+                    <Link to={`/products/${product.slug || product.id}`}>
                         <h3
                             className="text-lg font-bold text-stone-800 mb-2 line-clamp-2 hover:text-amber-800 transition-colors duration-200"
                             style={{ fontFamily: "'Playfair Display', serif" }}
@@ -85,4 +87,5 @@ function ProductCard({ product, settings }) {
         </>
     );
 }
+
 export default ProductCard;

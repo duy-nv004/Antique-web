@@ -54,9 +54,6 @@ Route::prefix('api')->group(function () {
     Route::get('/settings', function () {
         return response()->json(\App\Models\Setting::allAsArray());
     });
-
-    // Admin Stats (Protected)
-    Route::get('/admin/stats', [App\Http\Controllers\Api\AdminStatsController::class, 'index'])->middleware(['auth', 'admin']);
 });
 
 // =====================================================================

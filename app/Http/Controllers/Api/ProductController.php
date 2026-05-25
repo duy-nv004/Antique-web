@@ -3,65 +3,48 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
-use App\Models\Category;
-use App\Models\ContactClick;
+use App\Http\Requests\RecordClickRequest;
+use App\Services\ProductService;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    protected $productService;
+
+    public function __construct(ProductService $productService)
+    {
+        $this->productService = $productService;
+    }
+
     /**
      * Get products with filters and search.
      */
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'images'])
-            ->where('is_active', true);
-
-        // Filter by category
-        if ($request->has('category_id')) {
-            $query->where('category_id', $request->category_id);
-        }
-
-        // Search by name
-        if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
-
-        // Pagination or Limit
-        if ($request->has('limit')) {
-            $products = $query->latest()->limit($request->limit)->get();
-        } else {
-            $perPage = $request->get('per_page', 12);
-            $products = $query->latest()->paginate($perPage);
-        }
-
+        $products = $this->productService->getFilteredProductsForApi($request->all());
         return response()->json($products);
     }
 
     /**
      * Get single product detail.
      */
-    public function show($id)
+    public function show($idOrSlug)
     {
-        $product = Product::with(['category', 'images'])->findOrFail($id);
+        $product = $this->productService->getProductByIdOrSlug($idOrSlug);
         return response()->json($product);
     }
 
     /**
      * Record a contact consultation click.
      */
-    public function recordClick(Request $request)
+    public function recordClick(RecordClickRequest $request)
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id'
-        ]);
-
-        ContactClick::create([
-            'product_id' => $request->product_id,
-            'ip_address' => $request->ip()
-        ]);
+        $this->productService->recordClick(
+            (int)$request->product_id,
+            $request->ip()
+        );
 
         return response()->json(['success' => true]);
     }
 }
+

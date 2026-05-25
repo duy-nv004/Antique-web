@@ -24,6 +24,21 @@ class SettingsSeeder extends Seeder
                 'label' => 'Link Facebook Messenger',
             ],
             [
+                'key'   => 'facebook_fanpage',
+                'value' => 'https://facebook.com/yourpage',
+                'label' => 'Link Facebook Fanpage',
+            ],
+            [
+                'key'   => 'tiktok_url',
+                'value' => 'https://tiktok.com/@yourpage',
+                'label' => 'Link TikTok',
+            ],
+            [
+                'key'   => 'instagram_url',
+                'value' => 'https://instagram.com/yourpage',
+                'label' => 'Link Instagram',
+            ],
+            [
                 'key'   => 'hotline',
                 'value' => '0985408685',
                 'label' => 'Số Hotline',
@@ -46,7 +61,7 @@ class SettingsSeeder extends Seeder
         ];
 
         foreach ($defaults as $setting) {
-            Setting::updateOrCreate(
+            Setting::firstOrCreate(
                 ['key' => $setting['key']],
                 ['value' => $setting['value'], 'label' => $setting['label']]
             );

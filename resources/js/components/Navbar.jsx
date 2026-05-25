@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 function Navbar({ settings }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const shopName = settings?.shop_name || "Antique Shop";
-    const hotline  = settings?.hotline || null;
+    const hotline = settings?.hotline || null;
 
     return (
         <nav className="bg-stone-900/95 backdrop-blur-md text-white sticky top-0 z-50 shadow-lg border-b border-white/5">
@@ -22,13 +22,28 @@ function Navbar({ settings }) {
                             <span className="text-stone-600">|</span>
                             <span>Trưng bày & Kết nối đồ cổ tinh hoa</span>
                         </div>
-                        <div className="flex items-center space-x-6">
-                            <Link to="/admin" className="text-[10px] uppercase tracking-widest text-stone-400 hover:text-amber-400 transition-colors">
-                                Quản trị hệ thống
-                            </Link>
-                            {settings?.facebook_url && (
-                                <a href={settings.facebook_url} target="_blank" rel="noreferrer" className="text-stone-400 hover:text-amber-300 transition">
-                                    Facebook
+                        <div className="flex items-center space-x-5">
+                            {settings?.facebook_fanpage && (
+                                <a href={settings.facebook_fanpage} target="_blank" rel="noreferrer" className="text-stone-400 hover:text-amber-300 transition-colors flex items-center" title="Facebook Fanpage">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                                    </svg>
+                                </a>
+                            )}
+                            {settings?.tiktok_url && (
+                                <a href={settings.tiktok_url} target="_blank" rel="noreferrer" className="text-stone-400 hover:text-amber-300 transition-colors flex items-center" title="TikTok">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.52-4.06-1.39v7.76c-.04 2.11-.83 4.29-2.52 5.56-1.74 1.34-4.14 1.83-6.27 1.25-2.47-.64-4.57-2.61-5.18-5.09-.78-2.91.4-6.19 2.92-7.55 1.53-.84 3.39-1.01 5.08-.47V14.1c-1.12-.34-2.39-.17-3.34.52-.94.7-1.4 1.9-1.22 3.08.15 1.18.96 2.21 2.05 2.65 1.17.48 2.6.21 3.48-.68.61-.63.89-1.51.87-2.38V.02z" />
+                                    </svg>
+                                </a>
+                            )}
+                            {settings?.instagram_url && (
+                                <a href={settings.instagram_url} target="_blank" rel="noreferrer" className="text-stone-400 hover:text-amber-300 transition-colors flex items-center" title="Instagram">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                                    </svg>
                                 </a>
                             )}
                         </div>
@@ -62,9 +77,9 @@ function Navbar({ settings }) {
                         <Link to="/products" className="text-stone-300 hover:text-amber-300 transition-colors text-sm font-semibold tracking-wide">
                             BỘ SƯU TẬP
                         </Link>
-                        <a href="#" className="text-stone-300 hover:text-amber-300 transition-colors text-sm font-semibold tracking-wide">
-                            KIẾN THỨC ĐỒ CỔ
-                        </a>
+                        <Link to="/contact" className="text-stone-300 hover:text-amber-300 transition-colors text-sm font-semibold tracking-wide">
+                            LIÊN HỆ
+                        </Link>
                         {hotline && (
                             <a
                                 href={`tel:${hotline}`}
@@ -113,12 +128,13 @@ function Navbar({ settings }) {
                             Bộ sưu tập
                         </Link>
                         <Link
-                            to="/admin"
-                            className="block px-3 py-3 text-amber-400 hover:text-amber-300 hover:bg-stone-700 rounded-lg text-base font-medium transition-colors"
+                            to="/contact"
+                            className="block px-3 py-3 text-stone-300 hover:text-white hover:bg-stone-700 rounded-lg text-base font-medium transition-colors"
                             onClick={() => setIsMenuOpen(false)}
                         >
-                            Quản trị
+                            Liên hệ
                         </Link>
+
                         {hotline && (
                             <div className="pt-4 px-3">
                                 <a

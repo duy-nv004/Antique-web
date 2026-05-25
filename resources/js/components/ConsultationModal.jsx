@@ -19,8 +19,12 @@ function ConsultationModal({ isOpen, onClose, product, settings }) {
         }, 2000);
     };
 
+    const productUrl = product 
+        ? `${window.location.origin}/products/${product.slug || product.id}` 
+        : "";
+
     const zaloLink = settings?.zalo_phone 
-        ? `https://zalo.me/${settings.zalo_phone}` 
+        ? `https://zalo.me/${settings.zalo_phone}?msg=${encodeURIComponent(productUrl)}` 
         : "#";
 
     return (
@@ -85,6 +89,16 @@ function ConsultationModal({ isOpen, onClose, product, settings }) {
                                     href={zaloLink}
                                     target="_blank"
                                     rel="noreferrer"
+                                    onClick={async (e) => {
+                                        if (settings?.zalo_phone) {
+                                            try {
+                                                const productUrl = `${window.location.origin}/products/${product.slug || product.id}`;
+                                                await navigator.clipboard.writeText(productUrl);
+                                            } catch (err) {
+                                                console.error("Failed to copy link:", err);
+                                            }
+                                        }
+                                    }}
                                     className="flex items-center justify-center gap-2 py-3 border border-stone-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 transition-colors group"
                                 >
                                     <MessageSquare className="w-5 h-5 text-blue-500" />

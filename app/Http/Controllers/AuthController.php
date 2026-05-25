@@ -2,13 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\ChangePasswordRequest;
+use App\Services\AuthService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    protected $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
+
     /**
      * Show login form.
      */
@@ -23,14 +31,12 @@ class AuthController extends Controller
     /**
      * Handle login request.
      */
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+        $credentials = $request->validated();
+        $remember = (bool) $request->remember;
 
-        if (Auth::attempt($credentials, $request->remember)) {
+        if ($this->authService->login($credentials, $remember)) {
             $request->session()->regenerate();
             return redirect()->intended(route('admin.dashboard'));
         }
@@ -45,7 +51,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        Auth::logout();
+        $this->authService->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('login');
@@ -62,27 +68,16 @@ class AuthController extends Controller
     /**
      * Handle change password request.
      */
-    public function changePassword(Request $request)
+    public function changePassword(ChangePasswordRequest $request)
     {
-        $request->validate([
-            'current_password' => 'required',
-            'new_password' => 'required|min:8|confirmed',
-        ], [
-            'current_password.required' => 'Vui lòng nhập mật khẩu hiện tại',
-            'new_password.required' => 'Vui lòng nhập mật khẩu mới',
-            'new_password.min' => 'Mật khẩu mới phải từ 8 ký tự',
-            'new_password.confirmed' => 'Xác nhận mật khẩu không khớp',
-        ]);
-
         $user = Auth::user();
+        $data = $request->validated();
 
-        if (!Hash::check($request->current_password, $user->password)) {
-            return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không đúng']);
+        try {
+            $this->authService->changePassword($user, $data['current_password'], $data['new_password']);
+            return back()->with('success', 'Đổi mật khẩu thành công!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors());
         }
-
-        $user->password = Hash::make($request->new_password);
-        $user->save();
-
-        return back()->with('success', 'Đổi mật khẩu thành công!');
     }
 }

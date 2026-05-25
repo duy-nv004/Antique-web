@@ -4,8 +4,33 @@
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
+@source '../**/*.jsx';
 
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* Custom Indochine Utilities - Mapped to original Amber/Stone color palette */
+.hero-gradient {
+    background: linear-gradient(to bottom, rgba(28, 25, 23, 0.3), rgba(28, 25, 23, 0.75));
+}
+
+
+.active-dot {
+    width: 8px;
+    height: 8px;
+    background: #d97706; /* amber-600 */
+    transform: rotate(45deg);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #f5f5f4;
+}
+::-webkit-scrollbar-thumb {
+    background: #d97706;
 }

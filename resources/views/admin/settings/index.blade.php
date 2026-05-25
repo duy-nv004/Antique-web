@@ -43,12 +43,42 @@
                     </div>
 
                     <div class="space-y-2">
-                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Link Facebook Messenger</label>
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Link Facebook Messenger (Tư vấn)</label>
                         <div class="relative">
                             <i data-lucide="facebook" class="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 w-5 h-5"></i>
                             <input type="url" name="facebook_url" value="{{ old('facebook_url', $settings['facebook_url']->value ?? '') }}"
                                 class="w-full bg-vintage-50 border border-vintage-100 rounded-xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none font-medium"
                                 placeholder="https://m.me/yourpage">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Link Facebook Fanpage</label>
+                        <div class="relative">
+                            <i data-lucide="facebook" class="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 w-5 h-5"></i>
+                            <input type="url" name="facebook_fanpage" value="{{ old('facebook_fanpage', $settings['facebook_fanpage']->value ?? '') }}"
+                                class="w-full bg-vintage-50 border border-vintage-100 rounded-xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none font-medium"
+                                placeholder="https://facebook.com/yourpage">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Link TikTok</label>
+                        <div class="relative">
+                            <i data-lucide="video" class="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 w-5 h-5"></i>
+                            <input type="url" name="tiktok_url" value="{{ old('tiktok_url', $settings['tiktok_url']->value ?? '') }}"
+                                class="w-full bg-vintage-50 border border-vintage-100 rounded-xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none font-medium"
+                                placeholder="https://tiktok.com/@yourpage">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Link Instagram</label>
+                        <div class="relative">
+                            <i data-lucide="instagram" class="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 w-5 h-5"></i>
+                            <input type="url" name="instagram_url" value="{{ old('instagram_url', $settings['instagram_url']->value ?? '') }}"
+                                class="w-full bg-vintage-50 border border-vintage-100 rounded-xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none font-medium"
+                                placeholder="https://instagram.com/yourpage">
                         </div>
                     </div>
                 </div>

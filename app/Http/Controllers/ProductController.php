@@ -2,45 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
-use App\Models\Product;
-use Illuminate\Http\Request;
-use App\Models\ProductImage;
-use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Services\ProductService;
+use App\Services\CategoryService;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    protected $productService;
+    protected $categoryService;
+
+    public function __construct(ProductService $productService, CategoryService $categoryService)
+    {
+        $this->productService = $productService;
+        $this->categoryService = $categoryService;
+    }
+
     public function index(Request $request)
     {
-        $query = Product::with('category', 'images')->latest();
-
-        // Lọc theo từ khóa (tên hoặc SKU)
-        if ($request->filled('keyword')) {
-            $query->where(function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->keyword . '%')
-                  ->orWhere('sku', 'like', '%' . $request->keyword . '%');
-            });
-        }
-
-        // Lọc theo danh mục
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
-        }
-
-        // Lọc theo trạng thái hiển thị
-        if ($request->filled('is_active')) {
-            $query->where('is_active', $request->is_active);
-        }
-
-        // Lọc theo trạng thái hàng hóa
-        if ($request->filled('status')) {
-            $query->where('availability_status', $request->status);
-        }
-
-        $products = $query->paginate(10)->withQueryString();
-        $categories = Category::all();
+        $filters = $request->only(['keyword', 'category_id', 'is_active', 'status']);
+        $products = $this->productService->getFilteredProductsForAdmin($filters, 10);
+        $categories = $this->categoryService->getAllCategories();
 
         return view('admin.product.index', compact('products', 'categories'));
     }
@@ -50,7 +33,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        $categories = Category::where('is_active', 1)->get();
+        $categories = $this->categoryService->getActiveCategories();
         return view('admin.product.add', compact('categories'));
     }
 
@@ -59,30 +42,14 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        DB::beginTransaction();
         try {
-            // Loại bỏ images khỏi dữ liệu khi tạo Product
-            $product = Product::create($request->safe()->except(['images']));
+            $data = $request->safe()->except(['images']);
+            $images = $request->file('images');
 
-            // Xử lý upload nhiều ảnh
-            if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $index => $file) {
-                    $fileName = time() . '_' . $file->getClientOriginalName();
-                    $file->move(public_path('storage/products'), $fileName);
-                    $path = 'products/' . $fileName;
+            $this->productService->createProduct($data, $images);
 
-                    \App\Models\ProductImage::create([
-                        'product_id' => $product->id,
-                        'image_path' => $path,
-                        'is_main'    => ($index == 0) ? 1 : 0,
-                    ]);
-                }
-            }
-
-            DB::commit();
             return redirect()->route('admin.products.index')->with('success', 'Thêm đồ cổ thành công!');
         } catch (\Exception $e) {
-            DB::rollBack();
             return back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
     }
@@ -92,8 +59,8 @@ class ProductController extends Controller
      */
     public function show(int $id)
     {
-        $products   = Product::with('images', 'category')->findOrFail($id);
-        $categories = Category::all();
+        $products = $this->productService->getProductByIdOrSlug((string)$id);
+        $categories = $this->categoryService->getAllCategories();
         return view('admin.product.detail', compact('products', 'categories'));
     }
 
@@ -102,8 +69,8 @@ class ProductController extends Controller
      */
     public function edit(string $id)
     {
-        $product    = Product::with('images')->findOrFail($id);
-        $categories = Category::all();
+        $product = $this->productService->getProductByIdOrSlug($id);
+        $categories = $this->categoryService->getAllCategories();
         return view('admin.product.edit', compact('product', 'categories'));
     }
 
@@ -112,49 +79,17 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, string $id)
     {
-        $product = Product::findOrFail($id);
-        
-        DB::beginTransaction();
         try {
-            // Cập nhật thông tin cơ bản, loại bỏ các trường không thuộc bảng products
-            $product->update($request->safe()->except(['images', 'delete_images', 'main_image_id']));
+            $product = $this->productService->getProductByIdOrSlug($id);
+            $data = $request->safe()->except(['images', 'delete_images', 'main_image_id']);
+            $images = $request->file('images');
+            $deleteImageIds = $request->input('delete_images');
+            $mainImageId = $request->input('main_image_id') ? (int)$request->input('main_image_id') : null;
 
-            // 1. Xử lý xóa ảnh cũ
-            if ($request->filled('delete_images')) {
-                foreach ($request->delete_images as $imageId) {
-                    $image = \App\Models\ProductImage::find($imageId);
-                    if ($image) {
-                        \Illuminate\Support\Facades\Storage::disk('public')->delete($image->image_path);
-                        $image->delete();
-                    }
-                }
-            }
+            $this->productService->updateProduct($product, $data, $images, $deleteImageIds, $mainImageId);
 
-            // 2. Xử lý đặt ảnh chính
-            if ($request->filled('main_image_id')) {
-                \App\Models\ProductImage::where('product_id', $product->id)->update(['is_main' => 0]);
-                \App\Models\ProductImage::where('id', $request->main_image_id)->update(['is_main' => 1]);
-            }
-
-            // 3. Xử lý upload ảnh mới nếu có
-            if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $file) {
-                    $fileName = time() . '_' . $file->getClientOriginalName();
-                    $file->move(public_path('storage/products'), $fileName);
-                    $path = 'products/' . $fileName;
-
-                    \App\Models\ProductImage::create([
-                        'product_id' => $product->id,
-                        'image_path' => $path,
-                        'is_main'    => 0,
-                    ]);
-                }
-            }
-
-            DB::commit();
             return redirect()->route('admin.products.index')->with('success', 'Cập nhật sản phẩm thành công!');
         } catch (\Exception $e) {
-            DB::rollBack();
             return back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
     }
@@ -164,8 +99,12 @@ class ProductController extends Controller
      */
     public function destroy(string $id)
     {
-        $product = Product::findOrFail($id);
-        $product->delete(); // SoftDelete
-        return redirect()->route('admin.products.index')->with('success', 'Đã xóa sản phẩm!');
+        try {
+            $product = $this->productService->getProductByIdOrSlug($id);
+            $this->productService->deleteProduct($product);
+            return redirect()->route('admin.products.index')->with('success', 'Đã xóa sản phẩm!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
     }
 }

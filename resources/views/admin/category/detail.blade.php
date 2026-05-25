@@ -9,7 +9,6 @@
                         <th>id</th>
                         <th>name</th>
                         <th>description</th>
-                        <th>image</th>
                         <th>parent_id</th>
                         <th>is_active</th>
                         <th>is_deleted</th>
@@ -21,7 +20,6 @@
                             <td>{{ $categories['id'] }}</td>
                             <td>{{ $categories['name'] }}</td>
                             <td>{{ $categories['description'] }}</td>
-                            <td>{{ $categories['image'] }}</td>
                             <td>{{ $categories['parent_id'] }}</td>
                             <td>{{ $categories['is_active'] }}</td>
                             <td>{{ $categories['is_deleted'] }}</td>

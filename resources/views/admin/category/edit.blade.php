@@ -57,6 +57,8 @@
                     class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none resize-none"
                     placeholder="Giới thiệu đôi nét về những tuyệt phẩm trong danh mục này...">{{ old('description', $category->description) }}</textarea>
             </div>
+
+
         </div>
 
         <div class="flex flex-col sm:flex-row items-center justify-end gap-4">

@@ -1,11 +1,11 @@
 import React from "react";
-
+import { Link } from "react-router-dom";
 function Footer({ settings = {} }) {
-    const shopName    = settings.shop_name    || "Antique Shop";
+    const shopName = settings.shop_name || "Antique Shop";
     const shopAddress = settings.shop_address || "123 Đường ABC, Hà Nội";
-    const hotline     = settings.hotline      || null;
-    const shopEmail   = settings.shop_email   || "antique_shop@gmail.com";
-    const year        = new Date().getFullYear();
+    const hotline = settings.hotline || null;
+    const shopEmail = settings.shop_email || "antique_shop@gmail.com";
+    const year = new Date().getFullYear();
 
     return (
         <footer className="bg-stone-900 text-white border-t border-stone-800" id="contact">
@@ -61,18 +61,27 @@ function Footer({ settings = {} }) {
                         <h4 className="text-sm font-semibold text-stone-200 uppercase tracking-widest mb-5">Khám phá</h4>
                         <ul className="space-y-2.5">
                             {[
-                                { href: "/",          label: "Trang chủ"    },
-                                { href: "#products",  label: "Bộ sưu tập"   },
-                                { href: "#about",     label: "Về chúng tôi" },
-                                { href: "#contact",   label: "Liên hệ"      },
+                                { to: "/", label: "Trang chủ", isHash: false },
+                                { to: "/products", label: "Bộ sưu tập", isHash: false },
+                                { to: "/", label: "Về chúng tôi", isHash: false },
+                                { to: "/contact", label: "Liên hệ", isHash: false },
                             ].map((link) => (
-                                <li key={link.href}>
-                                    <a href={link.href} className="text-stone-400 hover:text-amber-400 transition-colors text-sm flex items-center gap-1.5">
-                                        <svg className="w-3 h-3 text-amber-700" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        {link.label}
-                                    </a>
+                                <li key={link.label}>
+                                    {link.isHash ? (
+                                        <a href={link.to} className="text-stone-400 hover:text-amber-400 transition-colors text-sm flex items-center gap-1.5">
+                                            <svg className="w-3 h-3 text-amber-700" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                                            </svg>
+                                            {link.label}
+                                        </a>
+                                    ) : (
+                                        <Link to={link.to} className="text-stone-400 hover:text-amber-400 transition-colors text-sm flex items-center gap-1.5">
+                                            <svg className="w-3 h-3 text-amber-700" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                                            </svg>
+                                            {link.label}
+                                        </Link>
+                                    )}
                                 </li>
                             ))}
                         </ul>
