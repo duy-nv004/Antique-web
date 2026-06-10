@@ -8,6 +8,7 @@ function ProductDetail({ settings }) {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [mainImage, setMainImage] = useState("");
+    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -39,20 +40,33 @@ function ProductDetail({ settings }) {
         // Copy product URL to clipboard
         try {
             await navigator.clipboard.writeText(productUrl);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 4000);
         } catch (clipboardErr) {
             console.error("Failed to copy link:", clipboardErr);
         }
 
+        const messageText = `Xin chào! Tôi muốn nhận tư vấn về sản phẩm: "${product?.name}" - ${productUrl}`;
+
         // Redirect based on type
         if (type === "zalo" && settings?.zalo_phone) {
-            const zaloDest = `https://zalo.me/${settings.zalo_phone}?msg=${encodeURIComponent(productUrl)}`;
+            const zaloDest = `https://zalo.me/${settings.zalo_phone}?msg=${encodeURIComponent(messageText)}`;
             window.open(zaloDest, "_blank");
         } else if (type === "messenger" && settings?.facebook_url) {
             let destUrl = settings.facebook_url;
             try {
+                // Tự động đổi facebook.com sang m.me để hỗ trợ điền sẵn nội dung tin nhắn (?text=...)
+                // Bỏ qua nếu là link đi thẳng vào hòm thư tin nhắn riêng (chứa /messages/)
+                if (destUrl.includes("facebook.com") && !destUrl.includes("m.me") && !destUrl.includes("/messages/")) {
+                    destUrl = destUrl.replace(/https?:\/\/(www\.)?facebook\.com\//, "https://m.me/");
+                }
+
                 if (destUrl.includes("m.me")) {
                     const separator = destUrl.includes("?") ? "&" : "?";
-                    destUrl = `${destUrl}${separator}text=${encodeURIComponent(productUrl)}`;
+                    destUrl = `${destUrl}${separator}text=${encodeURIComponent(messageText)}`;
+                } else {
+                    const separator = destUrl.includes("?") ? "&" : "?";
+                    destUrl = `${destUrl}${separator}text=${encodeURIComponent(messageText)}`;
                 }
             } catch (urlErr) {
                 console.error("Failed to parse Facebook URL:", urlErr);
@@ -186,6 +200,17 @@ function ProductDetail({ settings }) {
 
                         {/* Call to Actions */}
                         <div className="space-y-4">
+                            {copied && (
+                                <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-xs flex items-start gap-2.5 animate-in fade-in slide-in-from-top duration-300">
+                                    <svg className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <div>
+                                        <span className="font-bold">Đã sao chép link sản phẩm!</span> Bạn có thể <strong className="text-emerald-950">Dán (Ctrl + V)</strong> vào ô chat vừa mở để gửi nhanh cho shop.
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Zalo CTA */}
                             <button 
                                 onClick={() => handleContactClick("zalo")}
@@ -199,9 +224,11 @@ function ProductDetail({ settings }) {
                             <div className="grid grid-cols-2 gap-4">
                                 <button 
                                     onClick={() => handleContactClick("messenger")}
-                                    className="border border-stone-400 text-stone-800 hover:bg-stone-100 transition-colors py-3 px-4 flex items-center justify-center gap-2 uppercase tracking-widest text-xs font-semibold rounded"
+                                    className="bg-messenger text-white hover:shadow-lg hover:shadow-blue-100/50 transition-all py-3 px-4 flex items-center justify-center gap-2 uppercase tracking-widest text-xs font-semibold rounded border-0"
                                 >
-                                    <MessageCircle className="w-4 h-4 text-stone-600" />
+                                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.17.16.14.26.34.26.54l.05 1.67c.02.53.56.87 1.04.65l1.86-.82c.15-.07.32-.08.48-.04C9.5 21.21 10.72 21.4 12 21.4c5.64 0 10-4.13 10-9.7S17.64 2 12 2zm5.98 7.67l-2.94 4.65c-.47.74-1.47.93-2.18.41l-2.34-1.75c-.22-.16-.52-.16-.73 0l-3.15 2.39c-.42.32-.97-.19-.69-.64l2.94-4.65c.47-.74 1.47-.93 2.18-.41l2.34 1.75c.22.16.52.16.73 0l3.15-2.39c.42-.32.97.19.69.64z"/>
+                                    </svg>
                                     Messenger
                                 </button>
                                 <button 

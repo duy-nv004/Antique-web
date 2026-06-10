@@ -19,6 +19,11 @@ class CategorySeeder extends Seeder
             ['name' => 'Đồ Đồng Phục Cổ', 'description' => 'Các vật dụng bằng đồng xưa'],
             ['name' => 'Tranh & Thư Pháp', 'description' => 'Tranh cổ và chữ thư pháp'],
             ['name' => 'Trang Sức Cổ', 'description' => 'Vàng bạc đá quý xưa'],
+            ['name' => 'Đồ Ngọc & Đá Quý', 'description' => 'Hiện vật chế tác từ ngọc và đá phong thủy xưa'],
+            ['name' => 'Đồ Thủy Tinh & Pha Lê', 'description' => 'Bình hoa, ly tách thủy tinh, pha lê cổ Âu Châu'],
+            ['name' => 'Đồng Hồ Cổ', 'description' => 'Đồng hô để bàn, đồng hồ quả lắc xưa'],
+            ['name' => 'Đèn Cổ', 'description' => 'Đèn dầu bão, đèn chùm cổ điển'],
+            ['name' => 'Nhạc Cụ Cổ', 'description' => 'Nhạc cụ phát nhạc cơ học xưa'],
         ];
 
         foreach ($categories as $cat) {

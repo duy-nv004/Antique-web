@@ -34,3 +34,11 @@
 ::-webkit-scrollbar-thumb {
     background: #d97706;
 }
+
+/* Messenger Button */
+.bg-messenger {
+    background-color: #0866ff !important;
+}
+.bg-messenger:hover {
+    background-color: #0052d4 !important;
+}

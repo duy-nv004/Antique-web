@@ -59,7 +59,7 @@
                         <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 text-stone-600 w-5 h-5"></i>
                         <input type="email" name="email" value="{{ old('email') }}" required
                             class="w-full bg-stone-950 border border-white/5 rounded-xl py-4 pl-12 pr-4 text-white focus:ring-2 focus:ring-amber-700 focus:border-transparent transition-all outline-none"
-                            placeholder="admin@antique.com">
+                            placeholder="admin@gmail.com">
                     </div>
                 </div>
 

@@ -77,13 +77,48 @@ class ProductService
             $query->where('name', 'like', '%' . $params['search'] . '%');
         }
 
+        // Lọc theo khoảng giá
+        if (isset($params['min_price']) && $params['min_price'] !== '') {
+            $query->where('price', '>=', (float)$params['min_price']);
+        }
+        if (isset($params['max_price']) && $params['max_price'] !== '') {
+            $query->where('price', '<=', (float)$params['max_price']);
+        }
+
+        // Lọc theo trạng thái đã bán / chưa bán (còn hàng hoặc đã bán)
+        if (!empty($params['status'])) {
+            if ($params['status'] === 'sold') {
+                $query->where('availability_status', 'sold');
+            } elseif ($params['status'] === 'in_stock') {
+                $query->where('availability_status', 'in_stock');
+            }
+        }
+
+        // Lọc sản phẩm mới (ví dụ: tạo trong vòng 30 ngày gần đây)
+        if (isset($params['is_new']) && $params['is_new'] === 'true') {
+            $query->where('created_at', '>=', now()->subDays(30));
+        }
+
+        // Sắp xếp
+        if (!empty($params['sort_by'])) {
+            if ($params['sort_by'] === 'price_asc') {
+                $query->orderBy('price', 'asc');
+            } elseif ($params['sort_by'] === 'price_desc') {
+                $query->orderBy('price', 'desc');
+            } else {
+                $query->latest();
+            }
+        } else {
+            $query->latest();
+        }
+
         // Phân trang hoặc giới hạn số lượng trả về
         if (!empty($params['limit'])) {
-            return $query->latest()->limit((int)$params['limit'])->get();
+            return $query->limit((int)$params['limit'])->get();
         }
 
         $perPage = (int)($params['per_page'] ?? 12);
-        return $query->latest()->paginate($perPage);
+        return $query->paginate($perPage);
     }
 
     /**
