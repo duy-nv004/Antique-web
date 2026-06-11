@@ -112,9 +112,19 @@
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Giá trị niêm yết (VNĐ)</label>
+                    <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Giá trị niêm yết (VNĐ) <span class="text-red-500">*</span></label>
                     <div class="relative">
                         <input type="number" name="price" value="{{ old('price', $product->price) }}" required
+                            class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none font-bold text-amber-800"
+                            placeholder="0">
+                        <span class="absolute right-5 top-1/2 -translate-y-1/2 text-stone-400 font-bold">₫</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Giá khuyến mãi (VNĐ) <span class="text-stone-400 lowercase italic">(không bắt buộc)</span></label>
+                    <div class="relative">
+                        <input type="number" name="discount_price" value="{{ old('discount_price', $product->discount_price) }}"
                             class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none font-bold text-amber-800"
                             placeholder="0">
                         <span class="absolute right-5 top-1/2 -translate-y-1/2 text-stone-400 font-bold">₫</span>
@@ -152,7 +162,6 @@
                     <select name="availability_status" class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none appearance-none">
                         <option value="in_stock" {{ $product->availability_status == 'in_stock' ? 'selected' : '' }}>Còn hàng</option>
                         <option value="sold" {{ $product->availability_status == 'sold' ? 'selected' : '' }}>Đã giao dịch</option>
-                        <option value="display" {{ $product->availability_status == 'display' ? 'selected' : '' }}>Chỉ trưng bày</option>
                     </select>
                 </div>
             </div>

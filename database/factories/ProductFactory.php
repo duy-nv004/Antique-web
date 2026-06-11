@@ -25,7 +25,7 @@ class ProductFactory extends Factory
             'price' => fake()->randomFloat(2, 500, 50000),
             'stock' => fake()->numberBetween(0, 10),
             'is_active' => true,
-            'availability_status' => fake()->randomElement(['in_stock', 'sold', 'display']),
+            'availability_status' => fake()->randomElement(['in_stock', 'sold']),
             'period' => fake()->randomElement(['Thế kỷ 18', 'Triều Nguyễn', 'Nhà Minh', 'Pháp thuộc', 'Thế kỷ 19']),
             'material' => fake()->randomElement(['Gỗ trắc', 'Sứ xanh trắng', 'Đồng thau', 'Ngọc bích', 'Gỗ sưa']),
             'condition' => fake()->randomElement(['Nguyên bản', 'Phục chế nhẹ', 'Hơi trầy xước', 'Hoàn hảo']),

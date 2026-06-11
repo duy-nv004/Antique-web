@@ -82,7 +82,7 @@
         </div>
         
         <div class="p-8 border-t border-vintage-100 bg-vintage-50/50">
-            {{ $categories->links() }}
+            {{ $categories->links('partials.pagination') }}
         </div>
     </div>
 </div>

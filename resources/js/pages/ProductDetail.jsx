@@ -10,6 +10,13 @@ function ProductDetail({ settings }) {
     const [mainImage, setMainImage] = useState("");
     const [copied, setCopied] = useState(false);
 
+    const formatCurrency = (val) => {
+        if (!val) return "";
+        const num = Number(val);
+        if (isNaN(num)) return val;
+        return new Intl.NumberFormat("vi-VN").format(num) + " ₫";
+    };
+
     useEffect(() => {
         setLoading(true);
         axios.get(`/api/products/${slug}`)
@@ -154,7 +161,7 @@ function ProductDetail({ settings }) {
                                 </span>
                             )}
                             <span className="bg-[#FAF1D6] text-amber-950 border border-amber-300/30 px-3 py-1 text-[10px] font-bold tracking-[0.15em] uppercase rounded-sm">
-                                {product.availability_status === "sold" ? "ĐÃ BÁN" : product.availability_status === "display" ? "TRƯNG BÀY" : "HIẾM CÓ"}
+                                {product.availability_status === "sold" ? "ĐÃ BÁN" : "HIẾM CÓ"}
                             </span>
                         </div>
 
@@ -165,11 +172,25 @@ function ProductDetail({ settings }) {
 
                         {/* Tagline/Subtitle */}
                         {product.period && (
-                            <div className="text-stone-500 font-serif italic text-base mb-6 flex items-center gap-3">
+                            <div className="text-stone-500 font-serif italic text-base mb-4 flex items-center gap-3">
                                 <span className="w-8 h-[1px] bg-stone-300"></span>
                                 Kỷ vật triều đại {product.period}
                             </div>
                         )}
+
+                        {/* Price Section */}
+                        <div className="mb-6 flex items-baseline gap-3">
+                            {product.discount_price ? (
+                                <>
+                                    <span className="text-2xl font-bold text-amber-800">{formatCurrency(product.discount_price)}</span>
+                                    <span className="text-sm text-stone-400 line-through">{formatCurrency(product.price)}</span>
+                                </>
+                            ) : (
+                                <span className="text-2xl font-bold text-amber-800">
+                                    {product.price ? formatCurrency(product.price) : "Liên hệ"}
+                                </span>
+                            )}
+                        </div>
 
                         {/* Specifications Table */}
                         <div className="border-t border-b border-stone-200 py-4 mb-6 space-y-3.5 font-sans">
@@ -189,6 +210,12 @@ function ProductDetail({ settings }) {
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-stone-400 uppercase tracking-widest text-xs font-semibold">CHẤT LIỆU</span>
                                     <span className="text-stone-900 font-medium">{product.material}</span>
+                                </div>
+                            )}
+                            {(product.stock !== undefined && product.stock !== null) && (
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-stone-400 uppercase tracking-widest text-xs font-semibold">SỐ LƯỢNG</span>
+                                    <span className="text-stone-900 font-medium">{product.stock}</span>
                                 </div>
                             )}
                         </div>
@@ -211,32 +238,35 @@ function ProductDetail({ settings }) {
                                 </div>
                             )}
 
-                            {/* Zalo CTA */}
-                            <button 
-                                onClick={() => handleContactClick("zalo")}
-                                className="w-full bg-[#1C1714] text-[#EAD09D] hover:bg-stone-800 hover:text-white transition-all duration-300 py-4 px-6 flex items-center justify-center gap-3 font-semibold uppercase tracking-widest text-sm rounded border border-[#EAD09D]/20 shadow-md group"
-                            >
-                                <MessageCircle className="w-5 h-5 text-[#EAD09D] group-hover:scale-110 transition-transform" />
-                                Nhận tư vấn qua Zalo
-                            </button>
+                            {/* Consultation Channels (One Row with Rounded-XL Border Radius) */}
+                            <div className="grid grid-cols-3 gap-3">
+                                {/* Zalo CTA */}
+                                <button 
+                                    onClick={() => handleContactClick("zalo")}
+                                    className="bg-[#1C1714] text-[#EAD09D] hover:bg-stone-800 hover:text-white transition-all duration-300 py-3.5 px-2 flex items-center justify-center gap-2 font-semibold uppercase tracking-wider text-[11px] rounded-xl border border-[#EAD09D]/20 shadow-md group"
+                                >
+                                    <MessageCircle className="w-4 h-4 text-[#EAD09D] group-hover:scale-110 transition-transform flex-shrink-0" />
+                                    <span className="truncate">Zalo</span>
+                                </button>
 
-                            {/* Messenger & Hotline */}
-                            <div className="grid grid-cols-2 gap-4">
+                                {/* Messenger CTA */}
                                 <button 
                                     onClick={() => handleContactClick("messenger")}
-                                    className="bg-messenger text-white hover:shadow-lg hover:shadow-blue-100/50 transition-all py-3 px-4 flex items-center justify-center gap-2 uppercase tracking-widest text-xs font-semibold rounded border-0"
+                                    className="bg-messenger text-white hover:shadow-lg hover:shadow-blue-100/50 transition-all py-3.5 px-2 flex items-center justify-center gap-2 uppercase tracking-wider text-[11px] font-semibold rounded-xl border-0 group"
                                 >
-                                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-4 h-4 text-white group-hover:scale-110 transition-transform flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.17.16.14.26.34.26.54l.05 1.67c.02.53.56.87 1.04.65l1.86-.82c.15-.07.32-.08.48-.04C9.5 21.21 10.72 21.4 12 21.4c5.64 0 10-4.13 10-9.7S17.64 2 12 2zm5.98 7.67l-2.94 4.65c-.47.74-1.47.93-2.18.41l-2.34-1.75c-.22-.16-.52-.16-.73 0l-3.15 2.39c-.42.32-.97-.19-.69-.64l2.94-4.65c.47-.74 1.47-.93 2.18-.41l2.34 1.75c.22.16.52.16.73 0l3.15-2.39c.42-.32.97.19.69.64z"/>
                                     </svg>
-                                    Messenger
+                                    <span className="truncate">Messenger</span>
                                 </button>
+
+                                {/* Hotline CTA */}
                                 <button 
                                     onClick={() => handleContactClick("phone")}
-                                    className="border border-stone-400 text-stone-800 hover:bg-stone-100 transition-colors py-3 px-4 flex items-center justify-center gap-2 uppercase tracking-widest text-xs font-semibold rounded"
+                                    className="border border-stone-400 text-stone-800 hover:bg-stone-100 transition-colors py-3.5 px-2 flex items-center justify-center gap-2 uppercase tracking-wider text-[11px] font-semibold rounded-xl group"
                                 >
-                                    <Phone className="w-4 h-4 text-stone-600" />
-                                    Hotline
+                                    <Phone className="w-4 h-4 text-stone-600 group-hover:scale-110 transition-transform flex-shrink-0" />
+                                    <span className="truncate">Hotline</span>
                                 </button>
                             </div>
                         </div>

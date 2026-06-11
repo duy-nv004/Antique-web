@@ -6,6 +6,13 @@ import ConsultationModal from "./ConsultationModal";
 function ProductCard({ product, settings }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    const formatCurrency = (val) => {
+        if (!val) return "";
+        const num = Number(val);
+        if (isNaN(num)) return val;
+        return new Intl.NumberFormat("vi-VN").format(num) + " ₫";
+    };
+
     const images = Array.isArray(product.images) ? product.images : [];
     const mainImage = images.find((img) => img.is_main === 1) || images[0];
     const imageUrl = mainImage
@@ -17,7 +24,6 @@ function ProductCard({ product, settings }) {
     const availabilityConfig = {
         in_stock: { label: "Còn hàng",  cls: "bg-emerald-500" },
         sold:     { label: "Đã bán",    cls: "bg-red-500"     },
-        display:  { label: "Trưng bày", cls: "bg-amber-500"   },
     };
     const avail = availabilityConfig[product.availability_status] || availabilityConfig.in_stock;
 
@@ -42,7 +48,7 @@ function ProductCard({ product, settings }) {
                     <div className="absolute inset-0 bg-stone-900/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3 p-4">
                         <Link
                             to={`/products/${product.slug || product.id}`}
-                            className="w-full max-w-[160px] bg-white text-stone-800 text-sm font-bold py-2.5 rounded-full hover:bg-amber-50 transition transform hover:-translate-y-1 flex items-center justify-center gap-2 shadow-lg"
+                            className="w-full max-w-[160px] bg-white text-stone-800 hover:!text-black text-sm font-bold py-2.5 rounded-full hover:bg-amber-50 transition transform hover:-translate-y-1 flex items-center justify-center gap-2 shadow-lg"
                         >
                             <Info className="w-4 h-4" />
                             Xem chi tiết
@@ -71,9 +77,20 @@ function ProductCard({ product, settings }) {
                         </h3>
                     </Link>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between flex-wrap gap-1">
                         <span className="text-sm italic text-stone-500">{product.period}</span>
-                        <span className="text-amber-800 font-bold">Giá: {product.price}</span>
+                        <div className="flex flex-col items-end">
+                            {product.discount_price ? (
+                                <>
+                                    <span className="text-amber-800 font-bold text-sm">{formatCurrency(product.discount_price)}</span>
+                                    <span className="text-stone-400 line-through text-xs">{formatCurrency(product.price)}</span>
+                                </>
+                            ) : (
+                                <span className="text-amber-800 font-bold text-sm">
+                                    {product.price ? formatCurrency(product.price) : "Liên hệ"}
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

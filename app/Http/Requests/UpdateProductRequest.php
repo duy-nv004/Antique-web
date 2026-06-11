@@ -19,6 +19,7 @@ class UpdateProductRequest extends FormRequest
             'name'                => 'required|string|max:255',
             'category_id'         => 'required|exists:categories,id',
             'price'               => 'required|numeric|min:0',
+            'discount_price'      => 'nullable|numeric|min:0|lt:price',
             'stock'               => 'nullable|integer|min:0',
             'sku'                 => 'nullable|string|unique:products,sku,' . $productId,
             'period'              => 'nullable|string|max:255',
@@ -27,7 +28,7 @@ class UpdateProductRequest extends FormRequest
             'origin'              => 'nullable|string|max:255',
             'content'             => 'nullable|string',
             'is_active'           => 'nullable|boolean',
-            'availability_status' => 'nullable|string|in:in_stock,sold,display',
+            'availability_status' => 'nullable|string|in:in_stock,sold',
             'images.*'            => 'file|max:2048',
             'delete_images'       => 'nullable|array',
             'delete_images.*'     => 'exists:product_images,id',
@@ -41,6 +42,9 @@ class UpdateProductRequest extends FormRequest
             'name.required'        => 'Vui lòng nhập tên sản phẩm',
             'category_id.required' => 'Vui lòng chọn danh mục',
             'price.required'       => 'Vui lòng nhập giá sản phẩm',
+            'discount_price.numeric' => 'Giá khuyến mãi phải là số',
+            'discount_price.min'     => 'Giá khuyến mãi không được nhỏ hơn 0',
+            'discount_price.lt'      => 'Giá khuyến mãi phải nhỏ hơn giá gốc',
             'sku.unique'           => 'Mã SKU đã tồn tại',
         ];
     }

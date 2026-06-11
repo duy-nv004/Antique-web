@@ -25,6 +25,7 @@ class StoreProductRequest extends FormRequest
             'name'                => 'required|string|max:255',
             'category_id'         => 'required|exists:categories,id',
             'price'               => 'required|numeric|min:0',
+            'discount_price'      => 'nullable|numeric|min:0|lt:price',
             'stock'               => 'nullable|integer|min:0',
             'sku'                 => 'nullable|string|unique:products,sku',
             'period'              => 'nullable|string|max:255',
@@ -33,7 +34,7 @@ class StoreProductRequest extends FormRequest
             'origin'              => 'nullable|string|max:255',
             'content'             => 'nullable|string',
             'is_active'           => 'nullable|boolean',
-            'availability_status' => 'nullable|string|in:in_stock,sold,display',
+            'availability_status' => 'nullable|string|in:in_stock,sold',
             'images.*'            => 'file|max:2048',
         ];
     }
@@ -46,6 +47,9 @@ class StoreProductRequest extends FormRequest
             'category_id.exists'   => 'Danh mục không hợp lệ',
             'price.required'       => 'Vui lòng nhập giá sản phẩm',
             'price.numeric'        => 'Giá phải là số',
+            'discount_price.numeric' => 'Giá khuyến mãi phải là số',
+            'discount_price.min'     => 'Giá khuyến mãi không được nhỏ hơn 0',
+            'discount_price.lt'      => 'Giá khuyến mãi phải nhỏ hơn giá gốc',
             'sku.unique'           => 'Mã SKU đã tồn tại',
             'images.*.image'       => 'File tải lên phải là hình ảnh',
             'images.*.max'         => 'Ảnh không được vượt quá 2MB',

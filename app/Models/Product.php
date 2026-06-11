@@ -16,6 +16,7 @@ class Product extends Model
         'slug',
         'sku',
         'price',
+        'discount_price',
         'stock',
         'period',               // Niên đại
         'material',             // Chất liệu
@@ -50,7 +51,6 @@ class Product extends Model
     {
         return match($this->availability_status) {
             'sold'    => 'Đã bán',
-            'display' => 'Trưng bày',
             default   => 'Còn hàng',
         };
     }

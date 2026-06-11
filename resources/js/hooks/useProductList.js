@@ -25,6 +25,16 @@ export function useProductList() {
             .catch(err => console.error("Error fetching categories:", err));
     }, []);
 
+    // Sync state with search params (e.g. back/forward button)
+    useEffect(() => {
+        setSearchTerm(searchParams.get("search") || "");
+        setActiveCategory(searchParams.get("category") || "");
+        setIsNew(searchParams.get("is_new") || "");
+        setStatus(searchParams.get("status") || "");
+        setSortBy(searchParams.get("sort_by") || "");
+        setCurrentPage(parseInt(searchParams.get("page")) || 1);
+    }, [searchParams]);
+
     useEffect(() => {
         setLoading(true);
         const params = new URLSearchParams();

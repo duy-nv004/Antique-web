@@ -56,6 +56,7 @@ class ProductService
             'name',
             'slug',
             'price',
+            'discount_price',
             'period',
             'origin',
             'availability_status',
