@@ -44,4 +44,6 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 80
-CMD ["apache2-foreground"]
+
+# ĐOẠN ĐÃ SỬA: Tự động xóa cache cấu hình cũ, nạp config mới và chạy migrate trước khi bật Apache
+CMD php artisan config:clear && php artisan config:cache && php artisan migrate --force && apache2-foreground
