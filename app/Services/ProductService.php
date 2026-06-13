@@ -144,7 +144,7 @@ class ProductService
             if (!empty($imageFiles)) {
                 foreach ($imageFiles as $index => $file) {
                     $fileName = time() . '_' . $file->getClientOriginalName();
-                    $file->move(public_path('storage/products'), $fileName);
+                    $file->storeAs('products', $fileName, 'public');
                     $path = 'products/' . $fileName;
 
                     ProductImage::create([
@@ -188,7 +188,7 @@ class ProductService
             if (!empty($imageFiles)) {
                 foreach ($imageFiles as $file) {
                     $fileName = time() . '_' . $file->getClientOriginalName();
-                    $file->move(public_path('storage/products'), $fileName);
+                    $file->storeAs('products', $fileName, 'public');
                     $path = 'products/' . $fileName;
 
                     ProductImage::create([

@@ -45,5 +45,5 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 
 EXPOSE 80
 
-# ĐOẠN ĐÃ SỬA: Tự động xóa cache cấu hình cũ, nạp config mới, chạy migrate và seed UserSeeder trước khi bật Apache
-CMD php artisan config:clear && php artisan config:cache && php artisan migrate --force && php artisan db:seed --class=UserSeeder --force && apache2-foreground
+# ĐOẠN ĐÃ SỬA: Tạo symbolic link cho storage, tự động xóa cache cấu hình cũ, nạp config mới, chạy migrate và seed UserSeeder trước khi bật Apache
+CMD php artisan storage:link --force && php artisan config:clear && php artisan config:cache && php artisan migrate --force && php artisan db:seed --class=UserSeeder --force && apache2-foreground
