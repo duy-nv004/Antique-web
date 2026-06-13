@@ -127,10 +127,18 @@ class ProductService
      */
     public function getProductByIdOrSlug(string $idOrSlug): Product
     {
-        return Product::with(['category', 'images'])
-            ->where('id', $idOrSlug)
-            ->orWhere('slug', $idOrSlug)
-            ->firstOrFail();
+        $query = Product::with(['category', 'images']);
+
+        if (is_numeric($idOrSlug)) {
+            $query->where(function ($q) use ($idOrSlug) {
+                $q->where('id', $idOrSlug)
+                  ->orWhere('slug', $idOrSlug);
+            });
+        } else {
+            $query->where('slug', $idOrSlug);
+        }
+
+        return $query->firstOrFail();
     }
 
     /**
