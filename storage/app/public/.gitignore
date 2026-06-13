@@ -1,5 +1,7 @@
 *
 !.gitignore
+!products/
+products/*
 !products/vase.png
 !products/clock.png
 !products/statue.png
