@@ -62,7 +62,7 @@ function ConsultationModal({ isOpen, onClose, product, settings }) {
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-300">
                 <div className="relative h-32 bg-stone-800">
                     <img 
-                        src={product.images?.[0]?.image_path ? `/storage/${product.images[0].image_path}` : ""} 
+                        src={product.images?.[0]?.image_path ? (product.images[0].image_path.startsWith("http") ? product.images[0].image_path : `/storage/${product.images[0].image_path}`) : ""} 
                         alt="" 
                         className="w-full h-full object-cover opacity-40"
                     />

@@ -121,7 +121,7 @@
                             @php $mainImage = $product->images->where('is_main', 1)->first(); @endphp
                             <div class="w-16 h-16 rounded-xl overflow-hidden bg-stone-100 border border-vintage-200 shadow-sm">
                                 @if($mainImage)
-                                    <img src="{{ asset('storage/' . $mainImage->image_path) }}" class="w-full h-full object-cover">
+                                    <img src="{{ str_starts_with($mainImage->image_path, 'http') ? $mainImage->image_path : asset('storage/' . $mainImage->image_path) }}" class="w-full h-full object-cover">
                                 @else
                                     <div class="w-full h-full flex items-center justify-center text-stone-300">
                                         <i data-lucide="image" class="w-6 h-6"></i>

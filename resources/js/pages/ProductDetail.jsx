@@ -25,7 +25,7 @@ function ProductDetail({ settings }) {
                 setProduct(data);
                 const images = Array.isArray(data.images) ? data.images : [];
                 const mainImg = images.find(img => img.is_main)?.image_path || images[0]?.image_path;
-                setMainImage(mainImg ? `/storage/${mainImg}` : "/product/default.jpg");
+                setMainImage(mainImg ? (mainImg.startsWith("http") ? mainImg : `/storage/${mainImg}`) : "/product/default.jpg");
                 setLoading(false);
             })
             .catch((err) => {
@@ -133,7 +133,7 @@ function ProductDetail({ settings }) {
                         </div>
                         <div className="grid grid-cols-4 gap-4">
                             {Array.isArray(product.images) && product.images.map((img, idx) => {
-                                const imgUrl = `/storage/${img.image_path}`;
+                                const imgUrl = img.image_path && img.image_path.startsWith("http") ? img.image_path : `/storage/${img.image_path}`;
                                 return (
                                     <button 
                                         key={idx}

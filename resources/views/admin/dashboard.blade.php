@@ -71,7 +71,7 @@
                         <div class="w-14 h-14 rounded-xl overflow-hidden bg-stone-100 border border-vintage-100">
                             @php $img = $p->images->where('is_main', 1)->first(); @endphp
                             @if($img)
-                                <img src="{{ asset('storage/' . $img->image_path) }}" class="w-full h-full object-cover">
+                                <img src="{{ str_starts_with($img->image_path, 'http') ? $img->image_path : asset('storage/' . $img->image_path) }}" class="w-full h-full object-cover">
                             @else
                                 <div class="w-full h-full flex items-center justify-center text-stone-300">
                                     <i data-lucide="image" class="w-5 h-5"></i>

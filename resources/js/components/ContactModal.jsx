@@ -27,7 +27,7 @@ function ContactModal({ product, settings, onClose }) {
     };
 
     const mainImage = product.images && product.images.find((img) => img.is_main === 1) || product.images?.[0];
-    const imageUrl = mainImage ? `/storage/${mainImage.image_path}` : "/client/img/product/default.jpg";
+    const imageUrl = mainImage ? (mainImage.image_path && mainImage.image_path.startsWith("http") ? mainImage.image_path : `/storage/${mainImage.image_path}`) : "/client/img/product/default.jpg";
 
     const availabilityConfig = {
         in_stock: { label: "Còn hàng", cls: "bg-emerald-100 text-emerald-800 border-emerald-200" },

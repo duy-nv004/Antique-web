@@ -151,9 +151,7 @@ class ProductService
 
             if (!empty($imageFiles)) {
                 foreach ($imageFiles as $index => $file) {
-                    $fileName = time() . '_' . $file->getClientOriginalName();
-                    $file->storeAs('products', $fileName, 'public');
-                    $path = 'products/' . $fileName;
+                    $path = $this->uploadImage($file);
 
                     ProductImage::create([
                         'product_id' => $product->id,
@@ -180,7 +178,7 @@ class ProductService
                 foreach ($deleteImageIds as $imageId) {
                     $image = ProductImage::find($imageId);
                     if ($image) {
-                        Storage::disk('public')->delete($image->image_path);
+                        $this->deleteImage($image->image_path);
                         $image->delete();
                     }
                 }
@@ -195,9 +193,7 @@ class ProductService
             // 3. Xử lý upload ảnh mới nếu có
             if (!empty($imageFiles)) {
                 foreach ($imageFiles as $file) {
-                    $fileName = time() . '_' . $file->getClientOriginalName();
-                    $file->storeAs('products', $fileName, 'public');
-                    $path = 'products/' . $fileName;
+                    $path = $this->uploadImage($file);
 
                     ProductImage::create([
                         'product_id' => $product->id,
@@ -209,6 +205,60 @@ class ProductService
 
             return $product->load('images');
         });
+    }
+
+    /**
+     * Upload an image to Cloudinary (if configured) or public storage.
+     */
+    protected function uploadImage($file): string
+    {
+        if (env('CLOUDINARY_URL')) {
+            try {
+                $cloudinary = new \Cloudinary\Cloudinary([
+                    'url' => env('CLOUDINARY_URL')
+                ]);
+                $result = $cloudinary->uploadApi()->upload($file->getRealPath(), [
+                    'folder' => 'products'
+                ]);
+                return $result['secure_url'];
+            } catch (\Exception $e) {
+                logger()->error('Cloudinary upload failed, falling back to local: ' . $e->getMessage());
+            }
+        }
+
+        // Fallback to local public disk
+        $fileName = time() . '_' . $file->getClientOriginalName();
+        $file->storeAs('products', $fileName, 'public');
+        return 'products/' . $fileName;
+    }
+
+    /**
+     * Delete an image from Cloudinary (if url) or local storage.
+     */
+    protected function deleteImage(string $path): void
+    {
+        if (str_starts_with($path, 'http') && str_contains($path, 'cloudinary.com')) {
+            try {
+                $parsedUrl = parse_url($path, PHP_URL_PATH);
+                $uploadPos = strpos($parsedUrl, 'upload/');
+                if ($uploadPos !== false) {
+                    $subPath = substr($parsedUrl, $uploadPos + 7);
+                    if (preg_match('/^v\d+\/(.+)$/', $subPath, $matches)) {
+                        $subPath = $matches[1];
+                    }
+                    $publicId = pathinfo($subPath, PATHINFO_DIRNAME) . '/' . pathinfo($subPath, PATHINFO_FILENAME);
+                    
+                    $cloudinary = new \Cloudinary\Cloudinary([
+                        'url' => env('CLOUDINARY_URL')
+                    ]);
+                    $cloudinary->uploadApi()->destroy($publicId);
+                }
+            } catch (\Exception $e) {
+                logger()->error('Failed to delete Cloudinary image: ' . $e->getMessage());
+            }
+        } else {
+            Storage::disk('public')->delete($path);
+        }
     }
 
     /**

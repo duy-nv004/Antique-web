@@ -58,7 +58,7 @@
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-8 pb-8 border-b border-vintage-100">
                         @foreach($product->images as $img)
                             <div class="aspect-square rounded-2xl overflow-hidden border border-vintage-200 relative group shadow-sm" id="img-container-{{ $img->id }}">
-                                <img src="{{ asset('storage/' . $img->image_path) }}" class="w-full h-full object-cover {{ $img->is_main ? 'ring-4 ring-amber-700 ring-inset' : '' }}">
+                                <img src="{{ str_starts_with($img->image_path, 'http') ? $img->image_path : asset('storage/' . $img->image_path) }}" class="w-full h-full object-cover {{ $img->is_main ? 'ring-4 ring-amber-700 ring-inset' : '' }}">
                                 
                                 <!-- Delete Overlay (Hidden by default) -->
                                 <div id="delete-overlay-{{ $img->id }}" class="absolute inset-0 bg-red-500/40 hidden items-center justify-center backdrop-blur-[2px] z-10">

@@ -11,7 +11,7 @@ function ProductDetailModal({ product, settings, onClose, onContactClick }) {
         : [{ image_path: null, is_main: 1 }];
 
     const currentImageUrl = images[activeImageIndex]?.image_path
-        ? `/storage/${images[activeImageIndex].image_path}`
+        ? (images[activeImageIndex].image_path.startsWith("http") ? images[activeImageIndex].image_path : `/storage/${images[activeImageIndex].image_path}`)
         : "/client/img/product/product-1.jpg";
 
     const availabilityConfig = {
@@ -106,7 +106,7 @@ function ProductDetailModal({ product, settings, onClose, onContactClick }) {
                                 <div className="flex gap-2 overflow-x-auto pb-1">
                                     {images.map((img, idx) => {
                                         const thumbUrl = img.image_path
-                                            ? `/storage/${img.image_path}`
+                                            ? (img.image_path.startsWith("http") ? img.image_path : `/storage/${img.image_path}`)
                                             : "/client/img/product/default.jpg";
                                         return (
                                             <button
