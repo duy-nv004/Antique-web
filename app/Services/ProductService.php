@@ -212,10 +212,11 @@ class ProductService
      */
     protected function uploadImage($file): string
     {
-        if (env('CLOUDINARY_URL')) {
+        $cloudinaryUrl = config('services.cloudinary.url');
+        if ($cloudinaryUrl) {
             try {
                 $cloudinary = new \Cloudinary\Cloudinary([
-                    'url' => env('CLOUDINARY_URL')
+                    'url' => $cloudinaryUrl
                 ]);
                 $result = $cloudinary->uploadApi()->upload($file->getRealPath(), [
                     'folder' => 'products'
@@ -249,7 +250,7 @@ class ProductService
                     $publicId = pathinfo($subPath, PATHINFO_DIRNAME) . '/' . pathinfo($subPath, PATHINFO_FILENAME);
                     
                     $cloudinary = new \Cloudinary\Cloudinary([
-                        'url' => env('CLOUDINARY_URL')
+                        'url' => config('services.cloudinary.url')
                     ]);
                     $cloudinary->uploadApi()->destroy($publicId);
                 }
