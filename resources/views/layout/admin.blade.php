@@ -49,9 +49,26 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
+
+        @keyframes slideIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(120%); opacity: 0; }
+        }
+        .toast-animate-in {
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .toast-animate-out {
+            animation: slideOut 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
     </style>
 </head>
 <body class="bg-vintage-50 text-vintage-700">
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-[9999] flex flex-col gap-3"></div>
 
     <div class="flex min-h-screen">
         <!-- Sidebar -->
@@ -145,20 +162,6 @@
             </header>
 
             <div class="p-4 sm:p-6 lg:p-10">
-                @if(session('success'))
-                    <div class="mb-8 flex items-center gap-4 bg-emerald-50 border border-emerald-100 text-emerald-700 px-6 py-4 rounded-2xl shadow-sm">
-                        <i data-lucide="check-circle" class="w-6 h-6"></i>
-                        <span class="font-medium">{{ session('success') }}</span>
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="mb-8 flex items-center gap-4 bg-red-50 border border-red-100 text-red-700 px-6 py-4 rounded-2xl shadow-sm">
-                        <i data-lucide="alert-circle" class="w-6 h-6"></i>
-                        <span class="font-medium">{{ session('error') }}</span>
-                    </div>
-                @endif
-
                 @yield('content')
             </div>
         </main>
@@ -176,6 +179,66 @@
             sidebar.classList.toggle('-translate-x-full');
             overlay.classList.toggle('hidden');
         }
+
+        // Global Toast notification helper
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            
+            let bgColor = 'bg-stone-900/95 border-stone-800';
+            let iconName = 'info';
+            let iconColor = 'text-amber-500';
+            let textColor = 'text-stone-300';
+            
+            if (type === 'success') {
+                bgColor = 'bg-emerald-900/95 border-emerald-800';
+                iconName = 'check-circle';
+                iconColor = 'text-emerald-400';
+                textColor = 'text-emerald-50';
+            } else if (type === 'error') {
+                bgColor = 'bg-red-950/95 border-red-900';
+                iconName = 'alert-circle';
+                iconColor = 'text-red-400';
+                textColor = 'text-red-50';
+            }
+
+            toast.className = `flex items-center gap-3 px-4.5 py-3.5 rounded-xl border shadow-xl ${bgColor} text-xs font-semibold max-w-sm toast-animate-in`;
+            
+            toast.innerHTML = `
+                <i data-lucide="${iconName}" class="w-5 h-5 ${iconColor} flex-shrink-0"></i>
+                <span class="${textColor} flex-grow">${message}</span>
+                <button onclick="this.parentElement.remove()" class="text-stone-400 hover:text-white transition-colors ml-2">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            `;
+
+            container.appendChild(toast);
+
+            if (window.lucide) {
+                window.lucide.createIcons({
+                    node: toast
+                });
+            }
+
+            setTimeout(() => {
+                toast.classList.remove('toast-animate-in');
+                toast.classList.add('toast-animate-out');
+                setTimeout(() => {
+                    toast.remove();
+                }, 500);
+            }, 4000);
+        }
+
+        // Session toasts trigger on load
+        @if(session('success'))
+            showToast("{{ session('success') }}", 'success');
+        @endif
+
+        @if(session('error'))
+            showToast("{{ session('error') }}", 'error');
+        @endif
     </script>
     @yield('scripts')
 </body>

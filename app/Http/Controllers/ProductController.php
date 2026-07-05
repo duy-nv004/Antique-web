@@ -44,7 +44,16 @@ class ProductController extends Controller
     {
         try {
             $data = $request->safe()->except(['images']);
-            $data['is_featured'] = $request->has('is_featured');
+            $isFeatured = $request->has('is_featured');
+
+            if ($isFeatured) {
+                $featuredCount = \App\Models\Product::where('is_featured', true)->count();
+                if ($featuredCount >= 4) {
+                    return back()->withInput()->with('error', 'Không thể lưu. Chỉ được chọn tối đa 4 sản phẩm nổi bật hiển thị ở trang chủ.');
+                }
+            }
+
+            $data['is_featured'] = $isFeatured;
             $images = $request->file('images');
 
             $this->productService->createProduct($data, $images);
@@ -83,7 +92,16 @@ class ProductController extends Controller
         try {
             $product = $this->productService->getProductByIdOrSlug($id);
             $data = $request->safe()->except(['images', 'delete_images', 'main_image_id']);
-            $data['is_featured'] = $request->has('is_featured');
+            $isFeatured = $request->has('is_featured');
+
+            if ($isFeatured && !$product->is_featured) {
+                $featuredCount = \App\Models\Product::where('is_featured', true)->where('id', '!=', $product->id)->count();
+                if ($featuredCount >= 4) {
+                    return back()->withInput()->with('error', 'Không thể lưu. Chỉ được chọn tối đa 4 sản phẩm nổi bật hiển thị ở trang chủ.');
+                }
+            }
+
+            $data['is_featured'] = $isFeatured;
             $images = $request->file('images');
             $deleteImageIds = $request->input('delete_images');
             $mainImageId = $request->input('main_image_id') ? (int)$request->input('main_image_id') : null;
@@ -114,6 +132,18 @@ class ProductController extends Controller
     {
         try {
             $product = $this->productService->getProductByIdOrSlug($id);
+            
+            // If trying to activate featured, check limit first
+            if (!$product->is_featured) {
+                $featuredCount = \App\Models\Product::where('is_featured', true)->count();
+                if ($featuredCount >= 4) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Chỉ được chọn tối đa 4 sản phẩm nổi bật hiển thị ở trang chủ.'
+                    ], 400);
+                }
+            }
+
             $product->is_featured = !$product->is_featured;
             $product->save();
 

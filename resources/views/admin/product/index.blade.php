@@ -368,14 +368,15 @@
                 .then(data => {
                     if (data.success) {
                         this.checked = data.is_featured;
+                        showToast(data.is_featured ? 'Đã thiết lập sản phẩm nổi bật thành công!' : 'Đã hủy kích hoạt sản phẩm nổi bật.', 'success');
                     } else {
-                        alert('Lỗi: ' + (data.message || 'Không thể cập nhật trạng thái nổi bật'));
+                        showToast(data.message || 'Không thể cập nhật trạng thái nổi bật', 'error');
                         this.checked = !isChecked;
                     }
                 })
                 .catch(error => {
                     console.error('Error toggling featured status:', error);
-                    alert('Có lỗi mạng xảy ra khi cập nhật trạng thái.');
+                    showToast('Có lỗi mạng xảy ra khi cập nhật trạng thái.', 'error');
                     this.checked = !isChecked;
                 });
             });
