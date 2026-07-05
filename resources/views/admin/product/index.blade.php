@@ -142,11 +142,13 @@
                             @if($product->discount_price)
                                 <div class="flex flex-col">
                                     <span class="font-bold text-amber-700">{{ number_format($product->discount_price) }} ₫</span>
-                                    <span class="text-xs text-stone-450 line-through">{{ number_format($product->price) }} ₫</span>
+                                    <span class="text-xs text-stone-450 line-through">{{ $product->price ? number_format($product->price) . ' ₫' : '' }}</span>
                                 </div>
-                            @else
+                            @elseif($product->price)
                                 <span class="font-bold text-vintage-900">{{ number_format($product->price) }}</span>
                                 <span class="text-[10px] text-stone-400 font-bold ml-0.5">₫</span>
+                            @else
+                                <span class="text-xs font-bold text-stone-400">Liên hệ</span>
                             @endif
                         </td>
                         <td class="px-8 py-6 text-center">

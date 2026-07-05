@@ -7,17 +7,20 @@ function Navbar({ settings }) {
     const hotline = settings?.hotline || null;
 
     return (
-        <nav className="bg-stone-900/95 backdrop-blur-md text-white sticky top-0 z-50 shadow-lg border-b border-white/5">
+        <>
+            <nav className="bg-stone-900/95 backdrop-blur-md text-white sticky top-0 z-50 shadow-lg border-b border-white/5">
             {/* Top Bar */}
             <div className="hidden md:block bg-stone-800/50 border-b border-stone-700/50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-9">
                         <div className="flex items-center space-x-4 text-xs text-stone-300">
                             <span className="flex items-center gap-1.5">
-                                <svg className="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                <svg className="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                 </svg>
-                                {settings?.shop_email || "contact@antiqueshop.vn"}
+                                <a href={`tel:${settings?.hotline || "0985408685"}`} className="!text-amber-400 hover:!text-amber-300 transition-colors">
+                                    {settings?.hotline || "0985408685"}
+                                </a>
                             </span>
                             <span className="text-stone-600">|</span>
                             <span>Trưng bày & Kết nối đồ cổ tinh hoa</span>
@@ -95,60 +98,86 @@ function Navbar({ settings }) {
 
                     {/* Mobile menu button */}
                     <button
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        onClick={() => setIsMenuOpen(true)}
                         className="md:hidden text-stone-300 hover:text-white p-2 rounded-lg hover:bg-stone-700 transition-colors"
                         aria-label="Menu"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {isMenuOpen
-                                ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                            }
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
                 </div>
             </div>
-
-            {/* Mobile Menu */}
-            {isMenuOpen && (
-                <div className="md:hidden bg-stone-800 border-t border-stone-700 animate-in slide-in-from-top duration-300">
-                    <div className="px-4 pt-2 pb-6 space-y-1">
-                        <Link
-                            to="/"
-                            className="block px-3 py-3 text-stone-300 hover:text-white hover:bg-stone-700 rounded-lg text-base font-medium transition-colors"
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Trang chủ
-                        </Link>
-                        <Link
-                            to="/products"
-                            className="block px-3 py-3 text-stone-300 hover:text-white hover:bg-stone-700 rounded-lg text-base font-medium transition-colors"
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Bộ sưu tập
-                        </Link>
-                        <Link
-                            to="/contact"
-                            className="block px-3 py-3 text-stone-300 hover:text-white hover:bg-stone-700 rounded-lg text-base font-medium transition-colors"
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Liên hệ
-                        </Link>
-
-                        {hotline && (
-                            <div className="pt-4 px-3">
-                                <a
-                                    href={`tel:${hotline}`}
-                                    className="flex items-center justify-center gap-2 w-full py-3 bg-amber-700 text-white rounded-xl font-bold"
-                                >
-                                    Liên hệ: {hotline}
-                                </a>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
         </nav>
+
+        {/* Mobile Sidebar Menu (Slide in from right) */}
+        {/* Backdrop */}
+            <div
+                className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300 md:hidden ${
+                    isMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+            />
+
+            {/* Drawer */}
+            <div
+                className={`fixed top-0 right-0 bottom-0 w-72 max-w-[80vw] bg-stone-900 z-50 shadow-2xl border-l border-white/5 flex flex-col transition-transform duration-300 ease-in-out md:hidden ${
+                    isMenuOpen ? "translate-x-0" : "translate-x-full"
+                }`}
+            >
+                {/* Header inside drawer */}
+                <div className="flex justify-end items-center px-6 h-16 border-b border-white/5 flex-shrink-0">
+                    <button
+                        onClick={() => setIsMenuOpen(false)}
+                        className="text-stone-400 hover:text-white p-2 rounded-lg hover:bg-stone-800 transition-colors"
+                        aria-label="Đóng Menu"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                {/* Links */}
+                <div className="px-4 py-6 space-y-2 flex-grow overflow-y-auto">
+                    <Link
+                        to="/"
+                        className="block px-4 py-3 !text-stone-300 hover:!text-amber-400 hover:bg-stone-800 rounded-xl text-base font-semibold transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                    >
+                        Trang chủ
+                    </Link>
+                    <Link
+                        to="/products"
+                        className="block px-4 py-3 !text-stone-300 hover:!text-amber-400 hover:bg-stone-800 rounded-xl text-base font-semibold transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                    >
+                        Bộ sưu tập
+                    </Link>
+                    <Link
+                        to="/contact"
+                        className="block px-4 py-3 !text-stone-300 hover:!text-amber-400 hover:bg-stone-800 rounded-xl text-base font-semibold transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                    >
+                        Liên hệ
+                    </Link>
+
+                    {hotline && (
+                        <div className="pt-6 px-4">
+                            <a
+                                href={`tel:${hotline}`}
+                                className="flex items-center justify-center gap-2 w-full py-3 bg-amber-700 hover:bg-amber-600 text-white rounded-xl font-bold transition-colors shadow-lg shadow-amber-900/20"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg>
+                                Gọi tư vấn: {hotline}
+                            </a>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </>
     );
 }
 export default Navbar;

@@ -61,9 +61,9 @@
 
                     <!-- Giá trị niêm yết (50% - col 6) -->
                     <div class="space-y-2">
-                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Giá trị niêm yết (VNĐ) <span class="text-red-500">*</span></label>
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Giá trị niêm yết (VNĐ) <span class="text-stone-400 lowercase italic">(không bắt buộc)</span></label>
                         <div class="relative">
-                            <input type="number" name="price" value="{{ old('price') }}" required
+                            <input type="number" name="price" value="{{ old('price') }}"
                                 class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none font-bold text-amber-800"
                                 placeholder="0">
                             <span class="absolute right-5 top-1/2 -translate-y-1/2 text-stone-400 font-bold">₫</span>

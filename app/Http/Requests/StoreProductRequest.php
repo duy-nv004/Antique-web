@@ -24,8 +24,8 @@ class StoreProductRequest extends FormRequest
         return [
             'name'                => 'required|string|max:255',
             'category_id'         => 'required|exists:categories,id',
-            'price'               => 'required|numeric|min:0',
-            'discount_price'      => 'nullable|numeric|min:0|lt:price',
+            'price'               => 'nullable|numeric|min:0',
+            'discount_price'      => 'nullable|numeric|min:0' . ($this->filled('price') ? '|lt:price' : ''),
             'stock'               => 'nullable|integer|min:0',
             'sku'                 => 'nullable|string|unique:products,sku',
             'period'              => 'nullable|string|max:255',
@@ -45,7 +45,6 @@ class StoreProductRequest extends FormRequest
             'name.required'        => 'Vui lòng nhập tên sản phẩm',
             'category_id.required' => 'Vui lòng chọn danh mục',
             'category_id.exists'   => 'Danh mục không hợp lệ',
-            'price.required'       => 'Vui lòng nhập giá sản phẩm',
             'price.numeric'        => 'Giá phải là số',
             'discount_price.numeric' => 'Giá khuyến mãi phải là số',
             'discount_price.min'     => 'Giá khuyến mãi không được nhỏ hơn 0',

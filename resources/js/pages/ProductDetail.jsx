@@ -187,7 +187,7 @@ function ProductDetail({ settings }) {
                                 </>
                             ) : (
                                 <span className="text-2xl font-bold text-amber-800">
-                                    {product.price ? formatCurrency(product.price) : "Liên hệ"}
+                                    {product.price ? formatCurrency(product.price) : "Liên hệ để biết giá"}
                                 </span>
                             )}
                         </div>

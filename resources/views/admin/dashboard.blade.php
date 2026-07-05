@@ -84,7 +84,7 @@
                         </div>
                     </div>
                     <div class="text-right">
-                        <p class="font-bold text-vintage-900">{{ number_format($p->price) }} ₫</p>
+                        <p class="font-bold text-vintage-900">{{ $p->price ? number_format($p->price) . ' ₫' : 'Liên hệ' }}</p>
                         <span class="text-[9px] font-bold uppercase tracking-widest text-emerald-500">Active</span>
                     </div>
                 </div>

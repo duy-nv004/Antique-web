@@ -129,6 +129,25 @@ export function useProductList() {
         });
     };
 
+    const handleApplyFilters = ({ search, category, isNew, status, sortBy }) => {
+        setSearchTerm(search);
+        setActiveCategory(category);
+        setIsNew(isNew);
+        setStatus(status);
+        setSortBy(sortBy);
+        setCurrentPage(1);
+
+        setSearchParams(prev => {
+            if (search) prev.set("search", search); else prev.delete("search");
+            if (category) prev.set("category", category); else prev.delete("category");
+            if (isNew) prev.set("is_new", isNew); else prev.delete("is_new");
+            if (status) prev.set("status", status); else prev.delete("status");
+            if (sortBy) prev.set("sort_by", sortBy); else prev.delete("sort_by");
+            prev.set("page", 1);
+            return prev;
+        });
+    };
+
     return {
         products,
         pagination,
@@ -147,7 +166,8 @@ export function useProductList() {
         handleIsNewChange,
         handleStatusChange,
         handleSortByChange,
-        handlePageChange
+        handlePageChange,
+        handleApplyFilters
     };
 }
 

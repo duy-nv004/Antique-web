@@ -1,5 +1,5 @@
 import React from "react";
-import { MapPin, Phone, Mail, MessageCircle } from "lucide-react";
+import { MapPin, Phone, MessageCircle } from "lucide-react";
 
 function Contact({ settings = {} }) {
     const shopName = settings.shop_name || "Đồ Cổ Antique";
@@ -67,18 +67,6 @@ function Contact({ settings = {} }) {
                                 </div>
                             </div>
 
-                            {/* Email */}
-                            <div className="flex gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-800 flex-shrink-0">
-                                    <Mail className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">Thư điện tử</h4>
-                                    <a href={`mailto:${shopEmail}`} className="text-stone-700 font-semibold text-sm hover:text-amber-800 hover:underline block">
-                                        {shopEmail}
-                                    </a>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -166,7 +154,7 @@ function Contact({ settings = {} }) {
                                         href={tiktokUrl} 
                                         target="_blank" 
                                         rel="noreferrer" 
-                                        className="flex items-center gap-3 p-3 bg-stone-50 border border-stone-200/40 rounded-xl hover:bg-amber-50/50 hover:border-amber-200/60 transition-all group col-span-1 sm:col-span-2"
+                                        className="flex items-center gap-3 p-3 bg-stone-50 border border-stone-200/40 rounded-xl hover:bg-amber-50/50 hover:border-amber-200/60 transition-all group"
                                     >
                                         <div className="w-9 h-9 bg-stone-900 rounded-lg flex items-center justify-center flex-shrink-0 text-white font-bold text-xs">
                                             T

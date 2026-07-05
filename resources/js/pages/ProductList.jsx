@@ -22,11 +22,12 @@ function ProductList({ settings }) {
         handleIsNewChange,
         handleStatusChange,
         handleSortByChange,
-        handlePageChange
+        handlePageChange,
+        handleApplyFilters
     } = useProductList(settings);
 
     return (
-        <div className="bg-stone-50 min-h-screen pt-24 pb-20 relative">
+        <div className="bg-stone-50 min-h-screen pt-20 md:pt-24 pb-20 relative">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Bộ lọc ngang phía trên danh sách sản phẩm */}
@@ -42,6 +43,7 @@ function ProductList({ settings }) {
                     handleStatusChange={handleStatusChange}
                     sortBy={sortBy}
                     handleSortByChange={handleSortByChange}
+                    handleApplyFilters={handleApplyFilters}
                 />
 
                 {/* Main Content - Products Grid */}

@@ -84,7 +84,9 @@ function ContactModal({ product, settings, onClose }) {
                     </div>
                     <div className="flex-1 min-w-0">
                         <h4 className="font-semibold text-stone-800 text-sm truncate">{product.name}</h4>
-                        <p className="text-amber-700 font-bold text-base">{formatPrice(product.price)}</p>
+                        <p className="text-amber-700 font-bold text-base">
+                            {product.price ? formatPrice(product.price) : "Liên hệ để biết giá"}
+                        </p>
                         <span className={`inline-block text-xs px-2 py-0.5 rounded-full border font-medium mt-1 ${avail.cls}`}>
                             {avail.label}
                         </span>

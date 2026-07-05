@@ -18,8 +18,8 @@ class UpdateProductRequest extends FormRequest
         return [
             'name'                => 'required|string|max:255',
             'category_id'         => 'required|exists:categories,id',
-            'price'               => 'required|numeric|min:0',
-            'discount_price'      => 'nullable|numeric|min:0|lt:price',
+            'price'               => 'nullable|numeric|min:0',
+            'discount_price'      => 'nullable|numeric|min:0' . ($this->filled('price') ? '|lt:price' : ''),
             'stock'               => 'nullable|integer|min:0',
             'sku'                 => 'nullable|string|unique:products,sku,' . $productId,
             'period'              => 'nullable|string|max:255',
@@ -41,7 +41,6 @@ class UpdateProductRequest extends FormRequest
         return [
             'name.required'        => 'Vui lòng nhập tên sản phẩm',
             'category_id.required' => 'Vui lòng chọn danh mục',
-            'price.required'       => 'Vui lòng nhập giá sản phẩm',
             'discount_price.numeric' => 'Giá khuyến mãi phải là số',
             'discount_price.min'     => 'Giá khuyến mãi không được nhỏ hơn 0',
             'discount_price.lt'      => 'Giá khuyến mãi phải nhỏ hơn giá gốc',

@@ -141,7 +141,7 @@ function ProductDetailModal({ product, settings, onClose, onContactClick }) {
                             </h1>
 
                             <p className="text-3xl font-bold text-amber-700 mb-5">
-                                {formatPrice(product.price)}
+                                {product.price ? formatPrice(product.price) : "Liên hệ để biết giá"}
                             </p>
 
                             {/* Details Grid */}

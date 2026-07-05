@@ -87,7 +87,7 @@ function ProductCard({ product, settings }) {
                                 </>
                             ) : (
                                 <span className="text-amber-800 font-bold text-sm">
-                                    {product.price ? formatCurrency(product.price) : "Liên hệ"}
+                                    {product.price ? formatCurrency(product.price) : "Liên hệ để biết giá"}
                                 </span>
                             )}
                         </div>
