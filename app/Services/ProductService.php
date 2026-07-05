@@ -215,9 +215,7 @@ class ProductService
         $cloudinaryUrl = config('services.cloudinary.url');
         if ($cloudinaryUrl) {
             try {
-                $cloudinary = new \Cloudinary\Cloudinary([
-                    'url' => $cloudinaryUrl
-                ]);
+                $cloudinary = new \Cloudinary\Cloudinary($cloudinaryUrl);
                 $result = $cloudinary->uploadApi()->upload($file->getRealPath(), [
                     'folder' => 'products'
                 ]);
@@ -249,9 +247,7 @@ class ProductService
                     }
                     $publicId = pathinfo($subPath, PATHINFO_DIRNAME) . '/' . pathinfo($subPath, PATHINFO_FILENAME);
                     
-                    $cloudinary = new \Cloudinary\Cloudinary([
-                        'url' => config('services.cloudinary.url')
-                    ]);
+                    $cloudinary = new \Cloudinary\Cloudinary(config('services.cloudinary.url'));
                     $cloudinary->uploadApi()->destroy($publicId);
                 }
             } catch (\Exception $e) {
