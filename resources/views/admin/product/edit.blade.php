@@ -3,7 +3,7 @@
 @section('title', 'Chỉnh sửa sản phẩm')
 
 @section('content')
-<div class="max-w-6xl mx-auto">
+<div class="max-w-4xl mx-auto">
     <div class="flex items-center gap-4 mb-8">
         <a href="{{ route('admin.products.index') }}" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-vintage-200 text-stone-400 hover:text-amber-700 transition-all shadow-sm">
             <i data-lucide="chevron-left" class="w-5 h-5"></i>
@@ -14,167 +14,189 @@
         </div>
     </div>
 
-    <form action="{{ route('admin.products.update', $product->id) }}" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <form action="{{ route('admin.products.update', $product->id) }}" method="POST" enctype="multipart/form-data" class="space-y-8">
         @csrf
         @method('PUT')
         
-        <!-- Left Column: Details -->
-        <div class="lg:col-span-8 space-y-8">
-            <div class="bg-white rounded-3xl p-8 shadow-sm border border-vintage-200 space-y-6">
-                <div class="space-y-2">
-                    <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Tên tuyệt phẩm <span class="text-red-500">*</span></label>
-                    <input type="text" name="name" id="name" value="{{ old('name', $product->name) }}" required onkeyup="ChangeToSlug();"
-                        class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none"
-                        placeholder="Ví dụ: Đồng hồ Odo 54/8 bính bong">
-                </div>
-
+        <!-- Khung quản lý duy nhất -->
+        <div class="bg-white rounded-3xl p-8 shadow-sm border border-vintage-200 space-y-8 font-sans">
+            
+            <!-- 1. Nhóm Thông tin chính -->
+            <div>
+                <h2 class="text-xs uppercase tracking-wider font-bold text-amber-800 mb-6 pb-2 border-b border-vintage-100 flex items-center gap-2">
+                    <i data-lucide="info" class="w-4 h-4"></i> Thông tin chính
+                </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-2">
-                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Slug (URL)</label>
-                        <input type="text" name="slug" id="slug" value="{{ old('slug', $product->slug) }}" readonly
-                            class="w-full bg-stone-50 border border-vintage-100 rounded-xl px-5 py-4 text-stone-400 cursor-not-allowed outline-none">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Tên tuyệt phẩm <span class="text-red-500">*</span></label>
+                        <input type="text" name="name" id="name" value="{{ old('name', $product->name) }}" required onkeyup="ChangeToSlug();"
+                            class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none"
+                            placeholder="Ví dụ: Đồng hồ Odo 54/8 bính bong">
                     </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Danh mục bộ sưu tập</label>
+                        <select name="category_id" required class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none appearance-none">
+                            <option value="">-- Chọn danh mục --</option>
+                            @foreach($categories as $cate)
+                                <option value="{{ $cate->id }}" {{ $product->category_id == $cate->id ? 'selected' : '' }}>{{ $cate->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- SKU (50% - col 6) -->
                     <div class="space-y-2">
                         <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Mã định danh (SKU)</label>
                         <input type="text" name="sku" value="{{ old('sku', $product->sku) }}" readonly
                             class="w-full bg-stone-50 border border-vintage-100 rounded-xl px-5 py-4 text-stone-400 cursor-not-allowed outline-none font-mono">
                     </div>
-                </div>
 
-                <div class="space-y-2">
-                    <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Lịch sử & Câu chuyện</label>
-                    <textarea name="content" rows="10"
-                        class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none resize-none"
-                        placeholder="Kể về nguồn gốc, niên đại và giá trị của món đồ...">{{ old('content', $product->content) }}</textarea>
+                    <!-- Số lượng tồn kho (50% - col 6) -->
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Số lượng tồn kho</label>
+                        <input type="number" name="stock" value="{{ old('stock', $product->stock) }}" min="0"
+                            class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none">
+                    </div>
+
+                    <!-- Giá trị niêm yết (50% - col 6) -->
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Giá trị niêm yết (VNĐ) <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <input type="number" name="price" value="{{ old('price', $product->price) }}" required
+                                class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none font-bold text-amber-800"
+                                placeholder="0">
+                            <span class="absolute right-5 top-1/2 -translate-y-1/2 text-stone-400 font-bold">₫</span>
+                        </div>
+                    </div>
+
+                    <!-- Giá khuyến mãi (50% - col 6) -->
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Giá khuyến mãi (VNĐ) <span class="text-stone-400 lowercase italic">(không bắt buộc)</span></label>
+                        <div class="relative">
+                            <input type="number" name="discount_price" value="{{ old('discount_price', $product->discount_price) }}"
+                                class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none font-bold text-amber-800"
+                                placeholder="0">
+                            <span class="absolute right-5 top-1/2 -translate-y-1/2 text-stone-400 font-bold">₫</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Images Section -->
-            <div class="bg-white rounded-3xl p-8 shadow-sm border border-vintage-200">
-                <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1 block mb-4">Quản lý hình ảnh</label>
-                
-                <!-- Current Images -->
-                @if($product->images && $product->images->count() > 0)
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-8 pb-8 border-b border-vintage-100">
-                        @foreach($product->images as $img)
-                            <div class="aspect-square rounded-2xl overflow-hidden border border-vintage-200 relative group shadow-sm" id="img-container-{{ $img->id }}">
-                                <img src="{{ str_starts_with($img->image_path, 'http') ? $img->image_path : asset('storage/' . $img->image_path) }}" class="w-full h-full object-cover {{ $img->is_main ? 'ring-4 ring-amber-700 ring-inset' : '' }}">
-                                
-                                <!-- Delete Overlay (Hidden by default) -->
-                                <div id="delete-overlay-{{ $img->id }}" class="absolute inset-0 bg-red-500/40 hidden items-center justify-center backdrop-blur-[2px] z-10">
-                                    <span class="bg-white text-red-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg">Sẽ bị xóa</span>
-                                </div>
-
-                                <!-- Actions -->
-                                <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                                    <button type="button" onclick="toggleDelete({{ $img->id }})" class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white text-red-500 rounded-lg shadow-lg hover:bg-red-500 hover:text-white transition-all">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </button>
-                                    
-                                    <label class="absolute bottom-2 left-2 right-2 cursor-pointer">
-                                        <input type="radio" name="main_image_id" value="{{ $img->id }}" {{ $img->is_main ? 'checked' : '' }} class="hidden peer">
-                                        <div class="w-full py-2 bg-white/90 text-stone-500 rounded-lg text-[10px] font-bold uppercase text-center peer-checked:bg-amber-700 peer-checked:text-white transition-all shadow-sm">
-                                            {{ $img->is_main ? '★ Ảnh chính' : 'Đặt làm ảnh chính' }}
-                                        </div>
-                                    </label>
-                                </div>
-
-                                <!-- Hidden inputs for deletion -->
-                                <input type="checkbox" name="delete_images[]" value="{{ $img->id }}" id="delete-input-{{ $img->id }}" class="hidden">
-                            </div>
-                        @endforeach
+            <!-- 2. Nhóm Thông tin chi tiết -->
+            <div>
+                <h2 class="text-xs uppercase tracking-wider font-bold text-amber-800 mb-6 pb-2 border-b border-vintage-100 flex items-center gap-2">
+                    <i data-lucide="sliders" class="w-4 h-4"></i> Thông tin chi tiết
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Niên đại (50%) -->
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Niên đại</label>
+                        <input type="text" name="period" value="{{ old('period', $product->period) }}" class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-3 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none text-sm" placeholder="Vd: Thế kỷ 19">
                     </div>
-                @endif
 
-                <!-- Upload New -->
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" id="image-preview-container">
-                    <label class="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-vintage-200 rounded-2xl cursor-pointer hover:border-amber-700 hover:bg-amber-50 transition-all text-stone-400 hover:text-amber-700">
-                        <i data-lucide="plus" class="w-8 h-8 mb-2"></i>
-                        <span class="text-[10px] font-bold uppercase tracking-widest text-center px-1">Thêm ảnh mới</span>
-                        <input type="file" name="images[]" multiple accept="image/*" class="hidden" onchange="previewImages(this)">
-                    </label>
+                    <!-- Chất liệu (50%) -->
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Chất liệu</label>
+                        <input type="text" name="material" value="{{ old('material', $product->material) }}" class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-3 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none text-sm" placeholder="Vd: Gỗ trắc, đồng">
+                    </div>
+
+                    <!-- Trạng thái hiển thị (50%) -->
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Trạng thái hiển thị</label>
+                        <select name="is_active" class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none appearance-none">
+                            <option value="1" {{ $product->is_active ? 'selected' : '' }}>Công khai trên web</option>
+                            <option value="0" {{ !$product->is_active ? 'selected' : '' }}>Ẩn khỏi hệ thống</option>
+                        </select>
+                    </div>
+
+                    <!-- Tình trạng vật phẩm (50%) -->
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Tình trạng vật phẩm</label>
+                        <select name="availability_status" class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none appearance-none">
+                            <option value="in_stock" {{ $product->availability_status == 'in_stock' ? 'selected' : '' }}>Còn hàng</option>
+                            <option value="sold" {{ $product->availability_status == 'sold' ? 'selected' : '' }}>Đã giao dịch</option>
+                        </select>
+                    </div>
                 </div>
-                <p class="text-[10px] text-stone-400 mt-4 italic">* Bạn có thể chọn nhiều ảnh mới để bổ sung vào bộ sưu tập.</p>
+            </div>
+
+            <!-- 3. Nhóm Nội dung & Hình ảnh -->
+            <div>
+                <h2 class="text-xs uppercase tracking-wider font-bold text-amber-800 mb-6 pb-2 border-b border-vintage-100 flex items-center gap-2">
+                    <i data-lucide="image" class="w-4 h-4"></i> Nội dung & Hình ảnh
+                </h2>
+                <div class="space-y-6">
+                    <!-- Slug (URL) - Ẩn đi để tối giản -->
+                    <input type="hidden" name="slug" id="slug" value="{{ old('slug', $product->slug) }}">
+
+                    <!-- Lịch sử & Câu chuyện -->
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Lịch sử & Câu chuyện</label>
+                        <textarea name="content" rows="10"
+                            class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none resize-none"
+                            placeholder="Kể về nguồn gốc, niên đại và giá trị của món đồ...">{{ old('content', $product->content) }}</textarea>
+                    </div>
+
+                    <!-- Quản lý hình ảnh -->
+                    <div class="space-y-4 pt-6 border-t border-vintage-100">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1 block">Quản lý hình ảnh</label>
+                        
+                        <!-- Current Images -->
+                        @if($product->images && $product->images->count() > 0)
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-8 pb-8 border-b border-vintage-100">
+                                @foreach($product->images as $img)
+                                    <div class="aspect-square rounded-2xl overflow-hidden border border-vintage-200 relative group shadow-sm" id="img-container-{{ $img->id }}">
+                                        <img src="{{ str_starts_with($img->image_path, 'http') ? $img->image_path : asset('storage/' . $img->image_path) }}" class="w-full h-full object-cover {{ $img->is_main ? 'ring-4 ring-amber-700 ring-inset' : '' }}">
+                                        
+                                        <!-- Delete Overlay -->
+                                        <div id="delete-overlay-{{ $img->id }}" class="absolute inset-0 bg-red-500/40 hidden items-center justify-center backdrop-blur-[2px] z-10">
+                                            <span class="bg-white text-red-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg">Sẽ bị xóa</span>
+                                        </div>
+
+                                        <!-- Actions -->
+                                        <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                                            <button type="button" onclick="toggleDelete({{ $img->id }})" class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white text-red-500 rounded-lg shadow-lg hover:bg-red-500 hover:text-white transition-all">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                            
+                                            <label class="absolute bottom-2 left-2 right-2 cursor-pointer">
+                                                <input type="radio" name="main_image_id" value="{{ $img->id }}" {{ $img->is_main ? 'checked' : '' }} class="hidden peer">
+                                                <div class="w-full py-2 bg-white/90 text-stone-500 rounded-lg text-[10px] font-bold uppercase text-center peer-checked:bg-amber-700 peer-checked:text-white transition-all shadow-sm">
+                                                    {{ $img->is_main ? '★ Ảnh chính' : 'Đặt làm ảnh chính' }}
+                                                </div>
+                                            </label>
+                                        </div>
+
+                                        <!-- Hidden inputs for deletion -->
+                                        <input type="checkbox" name="delete_images[]" value="{{ $img->id }}" id="delete-input-{{ $img->id }}" class="hidden">
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <!-- Upload New -->
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" id="image-preview-container">
+                            <label class="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-vintage-200 rounded-2xl cursor-pointer hover:border-amber-700 hover:bg-amber-50 transition-all text-stone-400 hover:text-amber-700">
+                                <i data-lucide="plus" class="w-8 h-8 mb-2"></i>
+                                <span class="text-[10px] font-bold uppercase tracking-widest text-center px-1">Thêm ảnh mới</span>
+                                <input type="file" name="images[]" multiple accept="image/*" class="hidden" onchange="previewImages(this)">
+                            </label>
+                        </div>
+                        <p class="text-[10px] text-stone-400 mt-4 italic">* Bạn có thể chọn nhiều ảnh mới để bổ sung vào bộ sưu tập.</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Right Column: Stats & Meta -->
-        <div class="lg:col-span-4 space-y-8">
-            <div class="bg-white rounded-3xl p-8 shadow-sm border border-vintage-200 space-y-6">
-                <div class="space-y-2">
-                    <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Danh mục bộ sưu tập</label>
-                    <select name="category_id" required class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none appearance-none">
-                        <option value="">-- Chọn danh mục --</option>
-                        @foreach($categories as $cate)
-                            <option value="{{ $cate->id }}" {{ $product->category_id == $cate->id ? 'selected' : '' }}>{{ $cate->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Giá trị niêm yết (VNĐ) <span class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <input type="number" name="price" value="{{ old('price', $product->price) }}" required
-                            class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none font-bold text-amber-800"
-                            placeholder="0">
-                        <span class="absolute right-5 top-1/2 -translate-y-1/2 text-stone-400 font-bold">₫</span>
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Giá khuyến mãi (VNĐ) <span class="text-stone-400 lowercase italic">(không bắt buộc)</span></label>
-                    <div class="relative">
-                        <input type="number" name="discount_price" value="{{ old('discount_price', $product->discount_price) }}"
-                            class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none font-bold text-amber-800"
-                            placeholder="0">
-                        <span class="absolute right-5 top-1/2 -translate-y-1/2 text-stone-400 font-bold">₫</span>
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Số lượng tồn kho</label>
-                    <input type="number" name="stock" value="{{ old('stock', $product->stock) }}" min="0"
-                        class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none">
-                </div>
-
-                <hr class="border-vintage-100">
-
-                <div class="space-y-2">
-                    <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Niên đại</label>
-                    <input type="text" name="period" value="{{ old('period', $product->period) }}" class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-3 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none text-sm" placeholder="Vd: Thế kỷ 19">
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Chất liệu</label>
-                    <input type="text" name="material" value="{{ old('material', $product->material) }}" class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-3 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none text-sm" placeholder="Vd: Gỗ trắc, đồng">
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Trạng thái hiển thị</label>
-                    <select name="is_active" class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none appearance-none">
-                        <option value="1" {{ $product->is_active ? 'selected' : '' }}>Công khai trên web</option>
-                        <option value="0" {{ !$product->is_active ? 'selected' : '' }}>Ẩn khỏi hệ thống</option>
-                    </select>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Tình trạng vật phẩm</label>
-                    <select name="availability_status" class="w-full bg-vintage-50 border border-vintage-100 rounded-xl px-5 py-4 focus:ring-2 focus:ring-amber-700 focus:bg-white transition-all outline-none appearance-none">
-                        <option value="in_stock" {{ $product->availability_status == 'in_stock' ? 'selected' : '' }}>Còn hàng</option>
-                        <option value="sold" {{ $product->availability_status == 'sold' ? 'selected' : '' }}>Đã giao dịch</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="flex flex-col gap-4">
-                <button type="submit" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-bold py-4 rounded-xl shadow-xl shadow-amber-900/20 transition-all flex items-center justify-center gap-2">
-                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-                    Cập nhật thay đổi
-                </button>
-                <a href="{{ route('admin.products.index') }}" class="w-full bg-white text-stone-400 hover:text-stone-600 font-bold py-4 rounded-xl border border-vintage-200 transition-all flex items-center justify-center gap-2">
-                    Hủy bỏ & Quay lại
-                </a>
-            </div>
+        <!-- Hàng nút tác vụ (CTA) -->
+        <div class="flex flex-col sm:flex-row items-center justify-end gap-4 mt-6">
+            <a href="{{ route('admin.products.index') }}" class="w-full sm:w-auto px-8 py-4 bg-white text-stone-500 hover:text-stone-700 font-bold rounded-xl border border-vintage-200 transition-all text-center">
+                Hủy bỏ & Quay lại
+            </a>
+            <button type="submit" class="w-full sm:w-auto px-8 py-4 bg-amber-700 hover:bg-amber-800 text-white font-bold rounded-xl shadow-xl shadow-amber-900/20 transition-all flex items-center justify-center gap-2">
+                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                Cập nhật thay đổi
+            </button>
         </div>
     </form>
 </div>
