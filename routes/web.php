@@ -18,6 +18,7 @@ Route::post('admin/login', [AuthController::class, 'login'])->name('login.post')
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('categories', CategoryController::class);
     Route::resource('products', ProductController::class);
+    Route::post('products/{id}/toggle-featured', [ProductController::class, 'toggleFeatured'])->name('products.toggle-featured');
 
     // Cài đặt liên hệ (Settings)
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');

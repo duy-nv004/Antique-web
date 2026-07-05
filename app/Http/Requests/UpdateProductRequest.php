@@ -29,6 +29,7 @@ class UpdateProductRequest extends FormRequest
             'content'             => 'nullable|string',
             'is_active'           => 'nullable|boolean',
             'availability_status' => 'nullable|string|in:in_stock,sold',
+            'is_featured'         => 'nullable|boolean',
             'images.*'            => 'file|max:2048',
             'delete_images'       => 'nullable|array',
             'delete_images.*'     => 'exists:product_images,id',

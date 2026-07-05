@@ -110,7 +110,11 @@ class ProductService
                 $query->latest();
             }
         } else {
-            $query->latest();
+            if (!empty($params['limit'])) {
+                $query->orderBy('is_featured', 'desc')->latest();
+            } else {
+                $query->latest();
+            }
         }
 
         // Phân trang hoặc giới hạn số lượng trả về

@@ -44,6 +44,7 @@ class ProductController extends Controller
     {
         try {
             $data = $request->safe()->except(['images']);
+            $data['is_featured'] = $request->has('is_featured');
             $images = $request->file('images');
 
             $this->productService->createProduct($data, $images);
@@ -82,6 +83,7 @@ class ProductController extends Controller
         try {
             $product = $this->productService->getProductByIdOrSlug($id);
             $data = $request->safe()->except(['images', 'delete_images', 'main_image_id']);
+            $data['is_featured'] = $request->has('is_featured');
             $images = $request->file('images');
             $deleteImageIds = $request->input('delete_images');
             $mainImageId = $request->input('main_image_id') ? (int)$request->input('main_image_id') : null;
@@ -105,6 +107,25 @@ class ProductController extends Controller
             return redirect()->route('admin.products.index')->with('success', 'Đã xóa sản phẩm!');
         } catch (\Exception $e) {
             return back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
+    }
+
+    public function toggleFeatured(string $id)
+    {
+        try {
+            $product = $this->productService->getProductByIdOrSlug($id);
+            $product->is_featured = !$product->is_featured;
+            $product->save();
+
+            return response()->json([
+                'success' => true,
+                'is_featured' => $product->is_featured
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }

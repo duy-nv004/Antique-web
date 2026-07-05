@@ -19,27 +19,16 @@ function TopFilter({
     const [isFocused, setIsFocused] = useState(false);
     const [catSearch, setCatSearch] = useState("");
     const catRef = useRef(null);
+    const catMobileRef = useRef(null);
 
-    // Responsive mobile detector state
-    const [isMobile, setIsMobile] = useState(false);
     const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
-    // Local states to prevent auto-search on mobile
+    // Local states for the mobile drawer ONLY (preventing auto-search on mobile)
     const [localSearch, setLocalSearch] = useState(searchTerm);
     const [localCategory, setLocalCategory] = useState(activeCategory);
     const [localIsNew, setLocalIsNew] = useState(isNew);
     const [localStatus, setLocalStatus] = useState(status);
     const [localSortBy, setLocalSortBy] = useState(sortBy);
-
-    // Detect screen width to set mobile flag
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth < 768); // 768px matches Tailwind's 'md' breakpoint
-        };
-        handleResize();
-        window.addEventListener("resize", handleResize);
-        return () => window.removeEventListener("resize", handleResize);
-    }, []);
 
     // Sync local states if props change from outside (e.g. page changes, reset filters)
     useEffect(() => {
@@ -53,7 +42,10 @@ function TopFilter({
     // Close category dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (catRef.current && !catRef.current.contains(event.target)) {
+            const clickedOutsideDesktop = catRef.current && !catRef.current.contains(event.target);
+            const clickedOutsideMobile = catMobileRef.current && !catMobileRef.current.contains(event.target);
+            
+            if (clickedOutsideDesktop && clickedOutsideMobile) {
                 setIsCatOpen(false);
                 setIsFocused(false);
             }
@@ -62,62 +54,38 @@ function TopFilter({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // Filter categories based on selection search input
+    // Filter categories based on search keyword
     const filteredCategories = categories.filter((cat) =>
         cat.name.toLowerCase().includes(catSearch.toLowerCase())
     );
 
-    // Selected category name helper
-    const selectedCategoryName = localCategory
+    // Selected category name for Desktop (binds to activeCategory)
+    const selectedCategoryName = activeCategory
+        ? categories.find((c) => c.id == activeCategory)?.name
+        : "Tất cả danh mục";
+
+    // Selected category name for Mobile (binds to localCategory)
+    const selectedCategoryNameMobile = localCategory
         ? categories.find((c) => c.id == localCategory)?.name
         : "Tất cả danh mục";
 
-    // Handle search input changes
-    const onSearchChange = (e) => {
-        const val = e.target.value;
-        setLocalSearch(val);
-        if (!isMobile) {
-            handleSearchChange(e);
-        }
-    };
-
-    // Handle category selections
+    // Desktop category select handler
     const handleSelectCategory = (catId) => {
-        setLocalCategory(catId);
-        if (!isMobile) {
-            handleCategoryChange(catId);
-        }
+        handleCategoryChange(catId);
         setIsCatOpen(false);
         setIsFocused(false);
         setCatSearch("");
     };
 
-    // Handle sort changes
-    const onSortByChange = (val) => {
-        setLocalSortBy(val);
-        if (!isMobile) {
-            handleSortByChange(val);
-        }
+    // Mobile category select handler
+    const handleMobileSelectCategory = (catId) => {
+        setLocalCategory(catId);
+        setIsCatOpen(false);
+        setIsFocused(false);
+        setCatSearch("");
     };
 
-    // Handle newest toggle changes
-    const onIsNewChange = () => {
-        const nextVal = localIsNew === "true" ? "" : "true";
-        setLocalIsNew(nextVal);
-        if (!isMobile) {
-            handleIsNewChange(nextVal);
-        }
-    };
-
-    // Handle status dropdown changes
-    const onStatusChange = (val) => {
-        setLocalStatus(val);
-        if (!isMobile) {
-            handleStatusChange(val);
-        }
-    };
-
-    // Clear all filters handler
+    // Clear all filters handler (resets both desktop props and mobile local states)
     const handleClearAll = () => {
         setLocalSearch("");
         setLocalCategory("");
@@ -138,25 +106,25 @@ function TopFilter({
     };
 
     // Check if any filter is currently active
-    const hasActiveFilters = !!(localSearch || localCategory || localIsNew === "true" || localStatus || localSortBy);
+    const hasActiveFilters = !!(searchTerm || activeCategory || isNew === "true" || status || sortBy);
 
     return (
         <div className="w-full mb-8">
             {/* Desktop Filters (Hidden on Mobile) */}
             <div className="hidden md:grid grid-cols-12 gap-4 items-center">
-                {/* 1. Tìm kiếm theo tên (3 cols) */}
+                {/* 1. Tìm kiếm theo tên (3 cols) - Binds directly to prop */}
                 <div className="md:col-span-3 relative">
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 w-4.5 h-4.5" />
                     <input
                         type="text"
                         placeholder="Tìm theo tên hiện vật..."
                         className="w-full pl-11 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all outline-none text-sm text-stone-800 placeholder-stone-400"
-                        value={localSearch}
-                        onChange={onSearchChange}
+                        value={searchTerm}
+                        onChange={handleSearchChange}
                     />
                 </div>
 
-                {/* 2. Danh mục: Bấm vào là bộ lọc + hiển thị dropdown (3 cols) */}
+                {/* 2. Danh mục: Bấm vào là bộ lọc + hiển thị dropdown (3 cols) - Binds directly to prop */}
                 <div className="md:col-span-3 relative" ref={catRef}>
                     <div className="relative">
                         <FolderOpen className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 w-4.5 h-4.5" />
@@ -166,7 +134,7 @@ function TopFilter({
                             className={`w-full pl-11 pr-10 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all outline-none text-sm font-medium ${
                                 isFocused ? "text-stone-850 placeholder-stone-400" : "text-stone-800 cursor-pointer placeholder-stone-800"
                             }`}
-                            value={isFocused ? catSearch : (localCategory ? selectedCategoryName : "")}
+                            value={isFocused ? catSearch : (activeCategory ? selectedCategoryName : "")}
                             onChange={(e) => {
                                 setCatSearch(e.target.value);
                                 setIsCatOpen(true);
@@ -177,7 +145,7 @@ function TopFilter({
                                 setCatSearch("");
                             }}
                         />
-                        {localCategory ? (
+                        {activeCategory ? (
                             <button
                                 type="button"
                                 onClick={(e) => {
@@ -202,20 +170,20 @@ function TopFilter({
                                 <button
                                     onClick={() => handleSelectCategory("")}
                                     className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-between transition-colors ${
-                                        !localCategory 
+                                        !activeCategory 
                                             ? "bg-amber-50 text-amber-900" 
                                             : "text-stone-600 hover:bg-stone-50"
                                     }`}
                                 >
                                     <span>Tất cả danh mục</span>
-                                    {!localCategory && <Check className="w-3.5 h-3.5 text-amber-700 stroke-[3px]" />}
+                                    {!activeCategory && <Check className="w-3.5 h-3.5 text-amber-700 stroke-[3px]" />}
                                 </button>
 
                                 {filteredCategories.length === 0 ? (
                                     <div className="text-center text-stone-400 text-[11px] py-3">Không tìm thấy danh mục</div>
                                 ) : (
                                     filteredCategories.map((cat) => {
-                                        const isActive = localCategory == cat.id;
+                                        const isActive = activeCategory == cat.id;
                                         return (
                                             <button
                                                 key={cat.id}
@@ -237,12 +205,12 @@ function TopFilter({
                     )}
                 </div>
 
-                {/* 3. Sắp xếp giá (2 cols) */}
+                {/* 3. Sắp xếp giá (2 cols) - Binds directly to prop */}
                 <div className="md:col-span-2 relative">
                     <select
                         className="w-full pl-10 pr-8 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm font-medium text-stone-800 appearance-none outline-none hover:bg-stone-100/50 transition-colors cursor-pointer"
-                        value={localSortBy}
-                        onChange={(e) => onSortByChange(e.target.value)}
+                        value={sortBy}
+                        onChange={(e) => handleSortByChange(e.target.value)}
                     >
                         <option value="">Sắp xếp giá</option>
                         <option value="price_asc">Giá: Thấp đến Cao</option>
@@ -252,13 +220,13 @@ function TopFilter({
                     <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 w-4 h-4 pointer-events-none" />
                 </div>
 
-                {/* 4. Sản phẩm mới (2 cols) */}
+                {/* 4. Sản phẩm mới (2 cols) - Binds directly to prop */}
                 <div className="md:col-span-2">
                     <button
                         type="button"
-                        onClick={onIsNewChange}
+                        onClick={() => handleIsNewChange(isNew === "true" ? "" : "true")}
                         className={`w-full flex items-center justify-center gap-2 px-4 py-3 border !rounded-xl text-sm font-semibold transition-all ${
-                            localIsNew === "true"
+                            isNew === "true"
                                 ? "bg-amber-700 border-amber-800 text-white shadow-sm"
                                 : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100/50"
                         }`}
@@ -267,12 +235,12 @@ function TopFilter({
                     </button>
                 </div>
 
-                {/* 5. Trạng thái: Còn hàng / Đã bán (2 cols) */}
+                {/* 5. Trạng thái: Còn hàng / Đã bán (2 cols) - Binds directly to prop */}
                 <div className="md:col-span-2 relative">
                     <select
                         className="w-full pl-10 pr-8 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm font-medium text-stone-800 appearance-none outline-none hover:bg-stone-100/50 transition-colors cursor-pointer"
-                        value={localStatus}
-                        onChange={(e) => onStatusChange(e.target.value)}
+                        value={status}
+                        onChange={(e) => handleStatusChange(e.target.value)}
                     >
                         <option value="">Trạng thái</option>
                         <option value="in_stock">Còn hàng</option>
@@ -282,20 +250,6 @@ function TopFilter({
                     <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 w-4 h-4 pointer-events-none" />
                 </div>
             </div>
-
-            {/* Desktop Clear Filters Action Row */}
-            {hasActiveFilters && (
-                <div className="hidden md:flex justify-end mt-2.5">
-                    <button
-                        type="button"
-                        onClick={handleClearAll}
-                        className="text-xs font-semibold text-stone-500 hover:text-amber-700 transition-colors flex items-center gap-1.5"
-                    >
-                        <X className="w-3.5 h-3.5" />
-                        Xóa tất cả bộ lọc
-                    </button>
-                </div>
-            )}
 
             {/* Mobile Filters (Visible on Mobile only) */}
             <div className="md:hidden flex flex-col gap-4">
@@ -307,19 +261,8 @@ function TopFilter({
                             type="text"
                             placeholder="Tìm theo tên hiện vật..."
                             className="w-full pl-11 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all outline-none text-sm text-stone-800 placeholder-stone-400 shadow-sm"
-                            value={localSearch}
-                            onChange={(e) => setLocalSearch(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                    handleApplyFilters({
-                                        search: localSearch,
-                                        category: localCategory,
-                                        isNew: localIsNew,
-                                        status: localStatus,
-                                        sortBy: localSortBy
-                                    });
-                                }
-                            }}
+                            value={searchTerm}
+                            onChange={handleSearchChange}
                         />
                     </div>
                     
@@ -374,17 +317,17 @@ function TopFilter({
                 {/* Filters Content */}
                 <div className="p-6 space-y-5 flex-grow overflow-y-auto flex flex-col">
                     {/* 1. Category */}
-                    <div className="space-y-1.5 relative" ref={catRef}>
+                    <div className="space-y-1.5 relative" ref={catMobileRef}>
                         <label className="text-[10px] uppercase font-bold text-stone-400 tracking-wider">Danh mục bộ sưu tập</label>
                         <div className="relative">
                             <FolderOpen className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 w-4.5 h-4.5" />
                             <input
                                 type="text"
-                                placeholder={isFocused ? "Nhập tên danh mục..." : (selectedCategoryName || "Tất cả danh mục")}
+                                placeholder={isFocused ? "Nhập tên danh mục..." : (selectedCategoryNameMobile || "Tất cả danh mục")}
                                 className={`w-full pl-11 pr-10 py-3 bg-stone-800 border border-stone-700 rounded-xl focus:bg-stone-850 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all outline-none text-sm font-medium ${
                                     isFocused ? "text-white placeholder-stone-500" : "text-stone-300 cursor-pointer placeholder-stone-300"
                                 }`}
-                                value={isFocused ? catSearch : (localCategory ? selectedCategoryName : "")}
+                                value={isFocused ? catSearch : (localCategory ? selectedCategoryNameMobile : "")}
                                 onChange={(e) => {
                                     setCatSearch(e.target.value);
                                     setIsCatOpen(true);
@@ -400,7 +343,7 @@ function TopFilter({
                                     type="button"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        handleSelectCategory("");
+                                        handleMobileSelectCategory("");
                                     }}
                                     className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 hover:bg-stone-700 rounded-full text-stone-400 hover:text-stone-200 transition-colors"
                                 >
@@ -418,7 +361,7 @@ function TopFilter({
                                     style={{ scrollbarWidth: "thin", scrollbarColor: "#4b5563 transparent" }}
                                 >
                                     <button
-                                        onClick={() => handleSelectCategory("")}
+                                        onClick={() => handleMobileSelectCategory("")}
                                         className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-between transition-colors ${
                                             !localCategory ? "bg-amber-900/50 text-amber-300" : "text-stone-300 hover:bg-stone-700"
                                         }`}
@@ -435,7 +378,7 @@ function TopFilter({
                                             return (
                                                 <button
                                                     key={cat.id}
-                                                    onClick={() => handleSelectCategory(cat.id)}
+                                                    onClick={() => handleMobileSelectCategory(cat.id)}
                                                     className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-between transition-colors ${
                                                         isActive ? "bg-amber-900/50 text-amber-300" : "text-stone-300 hover:bg-stone-700"
                                                     }`}
@@ -458,13 +401,13 @@ function TopFilter({
                             <select
                                 className="w-full pl-10 pr-8 py-3 bg-stone-800 border border-stone-700 rounded-xl text-sm font-medium text-stone-300 appearance-none outline-none hover:bg-stone-700/50 transition-colors cursor-pointer"
                                 value={localSortBy}
-                                onChange={(e) => onSortByChange(e.target.value)}
+                                onChange={(e) => setLocalSortBy(e.target.value)}
                             >
                                 <option value="">Không sắp xếp</option>
                                 <option value="price_asc">Giá: Thấp đến Cao</option>
                                 <option value="price_desc">Giá: Cao đến Thấp</option>
                             </select>
-                            <ArrowUpDown className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 w-4.5 h-4.5 pointer-events-none" />
+                            <ArrowUpDown className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 w-4 h-4 pointer-events-none" />
                             <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 w-4.5 h-4.5 pointer-events-none" />
                         </div>
                     </div>
@@ -476,13 +419,13 @@ function TopFilter({
                             <select
                                 className="w-full pl-10 pr-8 py-3 bg-stone-800 border border-stone-700 rounded-xl text-sm font-medium text-stone-300 appearance-none outline-none hover:bg-stone-700/50 transition-colors cursor-pointer"
                                 value={localStatus}
-                                onChange={(e) => onStatusChange(e.target.value)}
+                                onChange={(e) => setLocalStatus(e.target.value)}
                             >
                                 <option value="">Tất cả trạng thái</option>
                                 <option value="in_stock">Còn hàng</option>
                                 <option value="sold">Đã bán</option>
                             </select>
-                            <CheckCircle className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 w-4.5 h-4.5 pointer-events-none" />
+                            <CheckCircle className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 w-4 h-4 pointer-events-none" />
                             <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 w-4.5 h-4.5 pointer-events-none" />
                         </div>
                     </div>
@@ -491,7 +434,7 @@ function TopFilter({
                     <div className="pt-2">
                         <button
                             type="button"
-                            onClick={onIsNewChange}
+                            onClick={() => setLocalIsNew(localIsNew === "true" ? "" : "true")}
                             className={`w-full flex items-center justify-center gap-2 px-4 py-3 border !rounded-xl text-sm font-semibold transition-all ${
                                 localIsNew === "true"
                                     ? "bg-amber-700 border-amber-800 text-white shadow-sm"

@@ -35,6 +35,7 @@ class StoreProductRequest extends FormRequest
             'content'             => 'nullable|string',
             'is_active'           => 'nullable|boolean',
             'availability_status' => 'nullable|string|in:in_stock,sold',
+            'is_featured'         => 'nullable|boolean',
             'images.*'            => 'file|max:2048',
         ];
     }

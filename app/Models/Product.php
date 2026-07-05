@@ -25,6 +25,7 @@ class Product extends Model
         'content',              // Mô tả chi tiết
         'is_active',
         'availability_status',  // in_stock | sold | display
+        'is_featured',
     ];
 
     /**

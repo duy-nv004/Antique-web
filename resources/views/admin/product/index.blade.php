@@ -111,6 +111,7 @@
                         <th class="px-8 py-5 text-[10px] uppercase tracking-widest font-bold text-stone-400">Giá trị (VNĐ)</th>
                         <th class="px-8 py-5 text-[10px] uppercase tracking-widest font-bold text-stone-400 text-center">Tồn kho</th>
                         <th class="px-8 py-5 text-[10px] uppercase tracking-widest font-bold text-stone-400">Trạng thái</th>
+                        <th class="px-8 py-5 text-[10px] uppercase tracking-widest font-bold text-stone-400 text-center">Nổi bật</th>
                         <th class="px-8 py-5 text-[10px] uppercase tracking-widest font-bold text-stone-400 text-right">Hành động</th>
                     </tr>
                 </thead>
@@ -180,6 +181,14 @@
                                         <span class="text-[9px] font-bold uppercase text-emerald-500">🟢 Sẵn có</span>
                                 @endswitch
                             </div>
+                        </td>
+                        <td class="px-8 py-6 text-center">
+                            <label class="relative inline-flex items-center cursor-pointer select-none">
+                                <input type="checkbox" 
+                                       data-product-id="{{ $product->id }}" 
+                                       class="toggle-featured-checkbox w-5 h-5 text-amber-700 bg-vintage-50 border-vintage-200 rounded focus:ring-2 focus:ring-amber-700 focus:ring-offset-2" 
+                                       {{ $product->is_featured ? 'checked' : '' }}>
+                            </label>
                         </td>
                         <td class="px-8 py-6 text-right">
                             <div class="flex items-center justify-end gap-2">
@@ -341,6 +350,35 @@
                 // Restore items visibility
                 itemButtons.forEach(btn => btn.classList.remove('hidden'));
             }
+        });
+        // AJAX toggle product featured status
+        document.querySelectorAll('.toggle-featured-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const productId = this.getAttribute('data-product-id');
+                const isChecked = this.checked;
+                
+                fetch(`/admin/products/${productId}/toggle-featured`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.checked = data.is_featured;
+                    } else {
+                        alert('Lỗi: ' + (data.message || 'Không thể cập nhật trạng thái nổi bật'));
+                        this.checked = !isChecked;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error toggling featured status:', error);
+                    alert('Có lỗi mạng xảy ra khi cập nhật trạng thái.');
+                    this.checked = !isChecked;
+                });
+            });
         });
     });
 </script>

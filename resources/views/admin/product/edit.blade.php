@@ -117,6 +117,15 @@
                             <option value="sold" {{ $product->availability_status == 'sold' ? 'selected' : '' }}>Đã giao dịch</option>
                         </select>
                     </div>
+
+                    <!-- Nổi bật trang chủ (50%) -->
+                    <div class="space-y-2 flex items-center pt-6">
+                        <label class="flex items-center gap-3 cursor-pointer select-none">
+                            <input type="checkbox" name="is_featured" value="1" {{ $product->is_featured ? 'checked' : '' }}
+                                class="w-5 h-5 text-amber-750 bg-vintage-50 border-vintage-200 rounded focus:ring-2 focus:ring-amber-700 focus:ring-offset-2">
+                            <span class="text-xs uppercase tracking-wider font-bold text-stone-600">Hiển thị nổi bật ở Trang chủ</span>
+                        </label>
+                    </div>
                 </div>
             </div>
 
